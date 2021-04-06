@@ -16,11 +16,10 @@ export const Canvas = new p5((p5) => {
     }
 
     p5.setup = () => {
-        p5.createCanvas(1000, 800);
-        p5.frameRate(60);
+        p5.createCanvas(800, 800);
+        p5.frameRate(1);
         game = new Game();
         game.setup(shipImage);
-
     }
 
     p5.draw = () => {
