@@ -17,7 +17,7 @@ export const Canvas = new p5((p5) => {
 
     p5.setup = () => {
         p5.createCanvas(800, 800);
-        p5.frameRate(1);
+        p5.frameRate(20);
         game = new Game();
         game.setup(shipImage);
     }
