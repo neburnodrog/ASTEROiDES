@@ -2,7 +2,7 @@ import './css/index.css';
 import p5 from 'p5';
 import { Game } from './game-components/game';
 import background from './images/space2.jpg';
-import ship from './images/ship7.png';
+import ship from './images/ship.png';
 
 const container = document.querySelector('.container');
 let game;
