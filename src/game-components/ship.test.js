@@ -11,7 +11,15 @@ directions = {
     ENE: Math.PI / 3 + Math.PI * 3 / 2,
 }
 
-test('ship overflow', () => {
+const p5 = {
+    height: 800,
+    width: 800,
+}
+
+
+test('ship overflow ESE', () => {
     let ship = new Ship()
-    ship.directionOfMovement
+    ship.angleOfMovement = directions.ESE;
+    ship.posX = 801;
+    ship.posY = 600;
 })
