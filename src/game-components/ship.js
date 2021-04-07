@@ -1,5 +1,5 @@
 // import p5 from 'p5';
-import { calcOverflowedPosition } from '../helperFuncs/helpers';
+import { ifOverflowed } from '../helperFuncs/helpers';
 
 export class Ship {
     constructor() {
@@ -92,28 +92,35 @@ export class Ship {
         return { x: newX, y: newY };
     }
 
+    isOverflowed(p5, position) {
+        let { x, y } = { ...position };
+
+        if (x < 0) {
+            return { x: x + p5.width, y: y }
+        }
+        if (x > p5.width) {
+            return { x: x % p5.width, y: y }
+        }
+
+        if (y < 0) {
+            return { x: x, y: y + p5.height }
+        }
+
+        if (y > p5.width) {
+            return { x: x, y: y % p5.height }
+        }
+
+        return position;
+    }
+
     draw(p5) {
-        console.log(this.angleOfShip)
         this.angleOfShip = this.rotateShip(p5, this.angleOfShip);
-        console.log(this.angleOfShip)
         this.acceleration = this.accelerate(p5, this.acceleration);
-        console.log(this.velocity)
         this.velocity = this.calcVelocity(this.velocity, this.acceleration, this.resistance, this.angleOfShip);
-        console.log(this.velocity)
         this.hyperspace(p5, this.velocity);
         this.angleOfMovement = this.calcAngleOfMovement();
         this.position = this.calcPosition(this.position, this.velocity);
-
-
-        if (
-            this.position.x < 0
-            || this.position.x > 800
-            || this.position.y < 0
-            || this.position.y > 800
-        ) {
-            console.log('calculating overflow')
-            this.position = calcOverflowedPosition(p5, this.position, this.angleOfMovement);
-        }
+        this.position = this.ifOverflowed(p5, this.position);
 
         p5.push()
         p5.translate(this.position.x, this.position.y);
