@@ -1,5 +1,4 @@
-// import p5 from 'p5';
-import { ifOverflowed } from '../helperFuncs/helpers';
+import { Shot } from "./shot";
 
 export class Ship {
     constructor() {
@@ -9,7 +8,7 @@ export class Ship {
         this.shipWidth = 30;
 
         this.position = {
-            x: 400,
+            x: 600,
             y: 400
         }
 
@@ -24,6 +23,8 @@ export class Ship {
         // directions (of ship = where its pointing / of movement = where its flying)
         this.angleOfMovement = 0;
         this.angleOfShip = 0; // expressed in radians
+
+        this.shots = [];
     }
 
     rotateShip(p5, angleOfShip) {
@@ -92,7 +93,7 @@ export class Ship {
         return { x: newX, y: newY };
     }
 
-    isOverflowed(p5, position) {
+    ifOverflowed(p5, position) {
         let { x, y } = { ...position };
 
         if (x < 0) {
@@ -113,6 +114,18 @@ export class Ship {
         return position;
     }
 
+    shoot(p5, position, angleOfShip) {
+        const shots = [...this.shots];
+
+        p5.keyPressed = () => {
+            if (p5.keyCode === 32) {
+                shots.push(new Shot(position.x, position.y, angleOfShip));
+            }
+        }
+
+        return shots;
+    }
+
     draw(p5) {
         this.angleOfShip = this.rotateShip(p5, this.angleOfShip);
         this.acceleration = this.accelerate(p5, this.acceleration);
@@ -127,5 +140,12 @@ export class Ship {
         p5.rotate(this.angleOfShip);
         p5.image(this.image, 5, 0, this.shipLength, this.shipWidth)
         p5.pop();
+
+        // shots
+        this.shots = this.shoot(p5, this.position, this.angleOfShip);
+        this.shots.forEach(shot => shot.draw(p5));
+        this.shots.filter(
+            shot => 0 < shot.position.x < p5.windowWidth
+                && 0 < shot.position.y < p5.windowHeight);
     }
 }
