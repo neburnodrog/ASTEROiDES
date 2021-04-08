@@ -4,20 +4,16 @@ export class Asteroid {
         this.size = size;
         this.position = position;
         this.radius = this.initialRadius(size);
-        this.sides = Math.floor(Math.random() * 5) + 7;
-        this.rotation = {
-            angle: 0,
-            velocity: Math.random() / 50,
-        }
+        this.sides = Math.floor(Math.random() * 4) + 7;
+        this.rotation = { angle: 0, velocity: Math.random() / 50 }
         this.velocity = velocity;
         this.exploded = false;
-        this.explotionShotVel = { x: 0, y: 0 };
     }
 
     initialRadius(size) {
-        if (size === 'X') return Math.random() * 20 + 46;
-        if (size === 'M') return Math.random() * 20 + 26;
-        if (size === 'S') return Math.random() * 20 + 6;
+        if (size === 'X') return Math.random() * 25 + 50;
+        if (size === 'M') return Math.random() * 15 + 30;
+        if (size === 'S') return Math.random() * 10 + 8;
     }
 
     drawPolygon(p5, x, y, radius, npoints) {

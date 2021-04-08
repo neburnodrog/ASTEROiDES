@@ -29,15 +29,15 @@ export class Game {
     createInitialAsteroids(p5, howMany, size) {
         for (let i = 0; i < howMany; i++) {
             let initialPosition = this.initialAsteroidPosition(p5);
-            let initialVelocity = this.initialAsteroidVelocity();
+            let initialVelocity = this.initialAsteroidVelocity(1);
             this.asteroids.push(new Asteroid(size, initialPosition, initialVelocity));
         }
     }
 
-    initialAsteroidVelocity() {
+    initialAsteroidVelocity(num) {
         return {
-            x: Math.random() - Math.random(),
-            y: Math.random() - Math.random()
+            x: num * (Math.random() - Math.random()),
+            y: num * (Math.random() - Math.random()),
         }
     }
 
@@ -78,29 +78,17 @@ export class Game {
         let explodedAsteroids = this.asteroids.filter(asteroid => asteroid.exploded);
 
         explodedAsteroids.map(explodedAsteroid => {
-            let { size, radius, position, explotionShotVel } = { ...explodedAsteroid };
-
-
-
-            const newPositions = [
-                { x: position.x + radius / 2, y: position.y - radius / 2 },
-                { x: position.x - radius / 2, y: position.y + radius / 2 },
-            ]
-
-            const newDirections = [
-                { x: (explotionShotVel.y / 20) * Math.random() * 2, y: -(explotionShotVel.x / 20) * Math.random() * 2 },
-                { x: -(explotionShotVel.y / 20) * Math.random() * 2, y: (explotionShotVel.x / 20) * Math.random() * 2 },
-            ]
+            let { size, position } = { ...explodedAsteroid };
 
             if (size === 'X') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('M', newPositions[0], newDirections[0]),
-                    new Asteroid('M', newPositions[1], newDirections[1]),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(3)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(3)),
                 ]);
             } else if (size === 'M') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('S', newPositions[0], newDirections[0]),
-                    new Asteroid('S', newPositions[1], newDirections[1]),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
                 ]);
             }
         });
