@@ -113,6 +113,10 @@ export class Ship {
         this.shots = this.shots.filter(shot => 0 < shot.position.x < p5.width && 0 < shot.position.y < p5.height && shot.hit === false);
     }
 
+    explosion() {
+        console.log("explosion")
+    }
+
     draw(p5) {
         this.rotateShip(p5);
         this.calcAcceleration(p5);

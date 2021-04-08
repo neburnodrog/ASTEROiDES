@@ -1,6 +1,6 @@
 export class Menu {
     constructor() {
-        this.text = 'Press Start to begin the game';
+        this.text = 'Click here Start to begin the game';
     }
 
     draw(p5) {

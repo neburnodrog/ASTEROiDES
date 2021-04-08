@@ -2,18 +2,26 @@ import { Ship } from './ship';
 import { Menu } from './menu';
 import { Asteroid } from './asteroid';
 import { Star } from './star';
+import { Life } from './life';
+import { Score } from './score';
 
 export class Game {
     constructor() {
-        this.started = true;
+        this.started = false;
+        this.menu = new Menu();
+        this.gameover = false;
+        this.gameoverScreen;
+        this.lifes = [];
+        this.score = new Score();
+
         this.stars = [];
         this.ship = new Ship();
         this.asteroids = [];
-        this.menu = new Menu();
     }
 
-    setup(p5, shipImage) {
+    setup(p5, shipImage, heartImage) {
         this.ship.image = shipImage;
+        for (let i = 0; i < 3; i++) this.lifes.push(new Life(heartImage))
         this.createInitialAsteroids(p5, 10, 'X');
         this.createStars(p5);
     }
@@ -45,7 +53,7 @@ export class Game {
         let x = p5.width * Math.random();
         let y = p5.height * Math.random();
         // while asteroid is overlapping with the ship's initial position:
-        while (p5.dist(x, y, p5.width / 2, p5.height / 2) < 2 * this.radius) {
+        while (p5.dist(x, y, p5.width / 2, p5.height / 2) < 2 * 50) {
             x = p5.width * Math.random();
             y = p5.height * Math.random();
         }
@@ -67,8 +75,8 @@ export class Game {
 
                 if (distance < asteroid.radius) {
                     asteroid.exploded = true;
-                    asteroid.explotionShotVel = shot.velocity
                     shot.hit = true;
+                    this.score.value += 100;
                 }
             })
         });
@@ -98,24 +106,42 @@ export class Game {
         this.asteroids = this.asteroids.filter(asteroid => !asteroid.exploded)
     }
 
+    checkIfCollisions(p5) {
+        this.asteroids.forEach(asteroid => {
+            const { x, y } = { ...asteroid.position }
+            const distance = p5.dist(x, y, this.ship.position.x, this.ship.position.y);
+
+            if (distance < asteroid.radius + 20) {
+                if (this.lifes.length === 0) {
+                    this.gameover = true;
+                } else {
+                    this.lifes.pop();
+                }
+
+                this.ship.explosion();
+            }
+        });
+    }
+
     // DRAW
     draw(p5) {
-        if (this.started) {
-            this.stars.forEach(star => star.draw(p5));
-            this.asteroids.forEach(asteroid => asteroid.draw(p5));
-            this.ship.draw(p5);
-            this.ship.shots.forEach(shot => shot.draw(p5));
+        this.stars.forEach(star => star.draw(p5));
+        this.asteroids.forEach(asteroid => asteroid.draw(p5));
+        this.ship.draw(p5);
+        this.ship.shots.forEach(shot => shot.draw(p5));
 
-            // collisions (asteroids & shots)
-            this.checkForHits(p5);
-            this.ifExplotionsCreateNewAsteroids();
-            this.cleanExplodedAsteroids();
-            this.ship.filterOldShots(p5);
+        // collisions (asteroids & ship)
+        this.checkIfCollisions(p5);
 
-            // collisions (asteroids & ship)
+        // collisions (asteroids & shots)
+        this.checkForHits(p5);
+        this.ifExplotionsCreateNewAsteroids();
+        this.cleanExplodedAsteroids();
+        this.ship.filterOldShots(p5);
 
-        } else {
-            this.menu.draw(p5)
-        }
+        // draw lifes && score
+        this.lifes.forEach((life, index) => life.draw(p5, index + 1));
+        this.score.draw(p5);
+
     }
 }

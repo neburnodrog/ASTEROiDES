@@ -28,8 +28,10 @@ export class Shot {
         this.position = this.calcPosition();
 
         // draw the shot
+        p5.push();
         p5.strokeWeight(8);
         p5.stroke("#ff01ef");
         p5.point(this.position.x, this.position.y);
+        p5.pop();
     }
 }

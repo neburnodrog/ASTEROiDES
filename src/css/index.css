@@ -3,10 +3,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(15, 34, 85, 0.836);
+    background-color: #8191b7;
 }
 
 canvas {
     border: 2px solid black;
-    border-radius: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 2px;
 }
