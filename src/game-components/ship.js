@@ -2,37 +2,30 @@ import { Shot } from "./shot";
 
 export class Ship {
     constructor() {
-        // image props
         this.image;
         this.shipLength = 50;
         this.shipWidth = 30;
-
         this.position = {
             x: 600,
-            y: 400
+            y: 400,
         }
-
         this.velocity = {
             x: 0,
             y: 0,
         }
-
         this.acceleration = 0; // only when arrow_up is pressed
         this.resistance = .01;
-
-        // directions (of ship = where its pointing / of movement = where its flying)
         this.angleOfMovement = 0;
         this.angleOfShip = 0; // expressed in radians
-
         this.shots = [];
     }
 
     rotateShip(p5, angleOfShip) {
         let newAngle = angleOfShip;
 
-        if (p5.keyIsDown(39)) {
+        if (p5.keyIsDown(68) || p5.keyIsDown(39)) {
             newAngle += Math.PI / 60;
-        } else if (p5.keyIsDown(37)) {
+        } else if (p5.keyIsDown(65) || p5.keyIsDown(37)) {
             newAngle -= Math.PI / 60;
         }
 
@@ -48,7 +41,7 @@ export class Ship {
     }
 
     hyperspace(p5, velocity) {
-        if (p5.keyIsDown(40)) {
+        if (p5.keyIsDown(83) || p5.keyIsDown(40)) {
             console.log('ready for hyperspace!')
             // for now its stop
             velocity.x = 0;
@@ -71,7 +64,7 @@ export class Ship {
     }
 
     accelerate(p5, acceleration) {
-        if (p5.keyIsDown(38)) {
+        if (p5.keyIsDown(87) || p5.keyIsDown(38)) {
             acceleration += .006;
         } else {
             acceleration = 0;
@@ -107,7 +100,7 @@ export class Ship {
             return { x: x, y: y + p5.height }
         }
 
-        if (y > p5.width) {
+        if (y > p5.height) {
             return { x: x, y: y % p5.height }
         }
 
@@ -118,7 +111,7 @@ export class Ship {
         const shots = [...this.shots];
 
         p5.keyPressed = () => {
-            if (p5.keyCode === 32) {
+            if (p5.keyCode === 71 || p5.keyCode === 190) {
                 shots.push(new Shot(position.x, position.y, angleOfShip));
             }
         }
@@ -143,7 +136,6 @@ export class Ship {
 
         // shots
         this.shots = this.shoot(p5, this.position, this.angleOfShip);
-        this.shots.forEach(shot => shot.draw(p5));
         this.shots.filter(
             shot => 0 < shot.position.x < p5.windowWidth
                 && 0 < shot.position.y < p5.windowHeight);

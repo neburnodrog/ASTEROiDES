@@ -1,35 +1,41 @@
 import { Ship } from './ship';
 import { Menu } from './menu';
 import { Asteroid } from './asteroid';
+import { Star } from './star';
 
 export class Game {
     constructor() {
         this.started = true;
+        this.stars = [];
         this.ship = new Ship();
         this.asteroids = [];
         this.menu = new Menu();
     }
 
-    setup(p5, shipImage, asteroidImage) {
+    setup(p5, shipImage) {
         this.ship.image = shipImage;
-        // const asteroidImage = this.randomAsteroidImage(asteroidImagesArray)
-        this.createAsteroids(p5, asteroidImage);
+        this.createAsteroids(p5);
+        this.createStars(p5);
     }
 
-    createAsteroids(p5, asteroidImage) {
-        for (let i = 0; i < 10; i++) {
-            this.asteroids.push(new Asteroid(p5, asteroidImage));
+    createStars(p5) {
+        for (let i = 0; i < 1000; i++) {
+            this.stars.push(new Star(p5))
         }
     }
 
-    randomAsteroidImage(asteroidImagesArray) {
-        return asteroidImagesArray[Math.floor(asteroidImagesArray.length * (Math.random()))];
+    createAsteroids(p5) {
+        for (let i = 0; i < 10; i++) {
+            this.asteroids.push(new Asteroid(p5, 'big'));
+        }
     }
 
     draw(p5) {
         if (this.started) {
-            this.ship.draw(p5);
             this.asteroids.forEach(asteroid => asteroid.draw(p5));
+            this.ship.draw(p5);
+            this.ship.shots.forEach(shot => shot.draw(p5));
+
         } else {
             this.menu.draw(p5)
         }

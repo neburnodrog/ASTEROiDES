@@ -22,14 +22,13 @@ export class Shot {
     }
 
     draw(p5) {
-        console.log("draw method of shot")
+        // calculations
         this.velocity = this.calcVelocityComponents();
+        this.position = this.calcPosition();
+
         // draw the shot
         p5.strokeWeight(8);
         p5.stroke("#ff01ef");
         p5.point(this.position.x, this.position.y);
-
-        // calculate next position
-        this.position = this.calcPosition();
     }
 }
