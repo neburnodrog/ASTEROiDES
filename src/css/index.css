@@ -1,13 +1,33 @@
 body {
     margin: 0;
+    background-color: #020f1b;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.title-container {
+    margin: auto;
+}
+
+.container {
+    display: flex;
     justify-content: center;
-    background-color: #8191b7;
+    align-items: center;
 }
 
 canvas {
     border: 2px solid black;
     border-radius: 5px;
     box-shadow: 2px 2px 2px;
+    margin: auto;
+}
+
+button {
+    position: absolute;
+    background-color: transparent;
+    color: #00ca8d;
+    border-radius: 0px;
+    padding: 10px 30px;
+    border: 2px solid tomato;
 }

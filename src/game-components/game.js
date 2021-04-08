@@ -1,14 +1,12 @@
 import { Ship } from './ship';
-import { Menu } from './menu';
 import { Asteroid } from './asteroid';
 import { Star } from './star';
 import { Life } from './life';
 import { Score } from './score';
 
 export class Game {
-    constructor() {
-        this.started = false;
-        this.menu = new Menu();
+    constructor(started = false) {
+        this.started = started;
         this.gameover = false;
         this.gameoverScreen;
         this.lifes = [];
@@ -37,7 +35,7 @@ export class Game {
     createInitialAsteroids(p5, howMany, size) {
         for (let i = 0; i < howMany; i++) {
             let initialPosition = this.initialAsteroidPosition(p5);
-            let initialVelocity = this.initialAsteroidVelocity(1);
+            let initialVelocity = this.initialAsteroidVelocity(2);
             this.asteroids.push(new Asteroid(size, initialPosition, initialVelocity));
         }
     }
@@ -76,7 +74,9 @@ export class Game {
                 if (distance < asteroid.radius) {
                     asteroid.exploded = true;
                     shot.hit = true;
-                    this.score.value += 100;
+                    if (asteroid.size === 'X') this.score.value += 50;
+                    if (asteroid.size === 'M') this.score.value += 100;
+                    if (asteroid.size === 'S') this.score.value += 200;
                 }
             })
         });
@@ -90,13 +90,13 @@ export class Game {
 
             if (size === 'X') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(3)),
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(3)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(4)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(4)),
                 ]);
             } else if (size === 'M') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
                 ]);
             }
         });
