@@ -1,34 +1,23 @@
 
 export class Asteroid {
-    constructor(p5, size) {
-        this.radius = this.asteroidInitialRadius(size);
-        this.position = this.asteroidInitialPosition(p5);
+    constructor(size, position, velocity) {
+        this.size = size;
+        this.position = position;
+        this.radius = this.initialRadius(size);
         this.sides = Math.floor(Math.random() * 5) + 7;
         this.rotation = {
             angle: 0,
             velocity: Math.random() / 50,
         }
-        this.velocity = {
-            x: Math.random() - Math.random(),
-            y: Math.random() - Math.random(),
-        }
+        this.velocity = velocity;
+        this.exploded = false;
+        this.explotionShotVel = { x: 0, y: 0 };
     }
 
-    asteroidInitialPosition(p5) {
-        // not to overlap with the ship's initial position
-        return {
-            x: p5.width * Math.random(),
-            y: p5.height * Math.random(),
-        }
-    }
-
-    asteroidInitialRadius(size) {
-        return (
-            size === 'big' ? Math.random() * 20 + 46
-                : size === 'middle' ? Math.random() * 20 + 26
-                    : size === 'small' ? Math.random() * 20 + 6
-                        : null
-        );
+    initialRadius(size) {
+        if (size === 'X') return Math.random() * 20 + 46;
+        if (size === 'M') return Math.random() * 20 + 26;
+        if (size === 'S') return Math.random() * 20 + 6;
     }
 
     drawPolygon(p5, x, y, radius, npoints) {
@@ -50,20 +39,20 @@ export class Asteroid {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
-        if (this.position.x > p5.width) {
-            this.position.x %= p5.width;
+        if (this.position.x > p5.width + this.radius) {
+            this.position.x = 0 - this.radius;
         }
 
-        if (this.position.x < 0) {
-            this.position.x += p5.width;
+        if (this.position.x < 0 - this.radius) {
+            this.position.x = p5.width + this.radius;
         }
 
-        if (this.position.y > p5.height) {
-            this.position.y %= p5.width;
+        if (this.position.y > p5.height + this.radius) {
+            this.position.y = 0 - this.radius;
         }
 
-        if (this.position.y < 0) {
-            this.position.y += p5.height;
+        if (this.position.y < 0 - this.radius) {
+            this.position.y = p5.height + this.radius;
         }
     }
 

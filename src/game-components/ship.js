@@ -20,74 +20,68 @@ export class Ship {
         this.shots = [];
     }
 
-    rotateShip(p5, angleOfShip) {
-        let newAngle = angleOfShip;
-
+    rotateShip(p5) {
         if (p5.keyIsDown(68) || p5.keyIsDown(39)) {
-            newAngle += Math.PI / 60;
+            this.angleOfShip += Math.PI / 60;
         } else if (p5.keyIsDown(65) || p5.keyIsDown(37)) {
-            newAngle -= Math.PI / 60;
+            this.angleOfShip -= Math.PI / 60;
         }
 
-        if (newAngle > 2 * Math.PI) {
-            return newAngle % (2 * Math.PI);
+        if (this.angleOfShip > 2 * Math.PI) {
+            this.angleOfShip % (2 * Math.PI);
         }
 
-        if (newAngle < 0) {
-            return newAngle + 2 * Math.PI;
+        if (this.angleOfShip < 0) {
+            this.angleOfShip + 2 * Math.PI;
         }
-
-        return newAngle;
     }
 
-    hyperspace(p5, velocity) {
+    calcAcceleration(p5) {
+        if (p5.keyIsDown(87) || p5.keyIsDown(38)) {
+            this.acceleration += .006;
+        } else {
+            this.acceleration = 0;
+        }
+    }
+
+    backwardsEngines(p5) {
+        let { x, y } = { ...this.velocity };
         if (p5.keyIsDown(83) || p5.keyIsDown(40)) {
-            console.log('ready for hyperspace!')
-            // for now its stop
-            velocity.x = 0;
-            velocity.y = 0;
+            x -= .1 * Math.cos(this.angleOfShip);
+            y -= .1 * Math.sin(this.angleOfShip);
         }
+
+        this.velocity = { x: x, y: y };
     }
 
-    calcVelocity(velocity, acceleration, resistance, direction) {
-        let { x, y } = { ...velocity };
+    calcVelocity() {
+        let { x, y } = { ...this.velocity };
 
         if (Math.sqrt(y ** 2 + x ** 2) < 10) {
-            x += acceleration * Math.cos(direction);
-            y += acceleration * Math.sin(direction);
+            x += this.acceleration * Math.cos(this.angleOfShip);
+            y += this.acceleration * Math.sin(this.angleOfShip);
         }
 
-        const newX = x - (x * resistance);
-        const newY = y - (y * resistance);
+        const newX = x - (x * this.resistance);
+        const newY = y - (y * this.resistance);
 
         return { x: newX, y: newY };
-    }
-
-    accelerate(p5, acceleration) {
-        if (p5.keyIsDown(87) || p5.keyIsDown(38)) {
-            acceleration += .006;
-        } else {
-            acceleration = 0;
-        }
-
-        return acceleration;
     }
 
     calcAngleOfMovement() {
         const { x, y } = { ...this.velocity };
-
         return Math.asin(y / Math.sqrt(y ** 2 + x ** 2));
     }
 
-    calcPosition(position, velocity) {
-        const newX = position.x + velocity.x;
-        const newY = position.y + velocity.y;
+    calcPosition() {
+        const newX = this.position.x + this.velocity.x;
+        const newY = this.position.y + this.velocity.y;
 
         return { x: newX, y: newY };
     }
 
-    ifOverflowed(p5, position) {
-        let { x, y } = { ...position };
+    ifOverflowed(p5) {
+        let { x, y } = { ...this.position };
 
         if (x < 0) {
             return { x: x + p5.width, y: y }
@@ -104,29 +98,29 @@ export class Ship {
             return { x: x, y: y % p5.height }
         }
 
-        return position;
+        return { x: x, y: y };
     }
 
-    shoot(p5, position, angleOfShip) {
-        const shots = [...this.shots];
-
+    shoot(p5) {
         p5.keyPressed = () => {
             if (p5.keyCode === 71 || p5.keyCode === 190) {
-                shots.push(new Shot(position.x, position.y, angleOfShip));
+                this.shots.push(new Shot(this.position.x, this.position.y, this.angleOfShip));
             }
         }
+    }
 
-        return shots;
+    filterOldShots(p5) {
+        this.shots = this.shots.filter(shot => 0 < shot.position.x < p5.width && 0 < shot.position.y < p5.height && shot.hit === false);
     }
 
     draw(p5) {
-        this.angleOfShip = this.rotateShip(p5, this.angleOfShip);
-        this.acceleration = this.accelerate(p5, this.acceleration);
-        this.velocity = this.calcVelocity(this.velocity, this.acceleration, this.resistance, this.angleOfShip);
-        this.hyperspace(p5, this.velocity);
+        this.rotateShip(p5);
+        this.calcAcceleration(p5);
+        this.backwardsEngines(p5);
+        this.velocity = this.calcVelocity();
         this.angleOfMovement = this.calcAngleOfMovement();
-        this.position = this.calcPosition(this.position, this.velocity);
-        this.position = this.ifOverflowed(p5, this.position);
+        this.position = this.calcPosition();
+        this.position = this.ifOverflowed(p5);
 
         p5.push()
         p5.translate(this.position.x, this.position.y);
@@ -135,9 +129,6 @@ export class Ship {
         p5.pop();
 
         // shots
-        this.shots = this.shoot(p5, this.position, this.angleOfShip);
-        this.shots.filter(
-            shot => 0 < shot.position.x < p5.windowWidth
-                && 0 < shot.position.y < p5.windowHeight);
+        this.shoot(p5);
     }
 }

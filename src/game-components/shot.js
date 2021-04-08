@@ -4,6 +4,7 @@ export class Shot {
         this.position = { x: x, y: y }
         this.direction = direction;
         this.velocity = { x: 0, y: 0 };
+        this.hit = false;
     }
 
     calcVelocityComponents() {

@@ -8,8 +8,8 @@ export class Star {
     }
 
     draw(p5) {
-        p5.stroke(white);
-        p5.strokeWidth(1);
+        p5.stroke('white');
+        p5.strokeWeight(2);
         p5.point(this.position.x, this.position.y);
     }
 }

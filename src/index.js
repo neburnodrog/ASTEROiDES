@@ -1,7 +1,7 @@
 import './css/index.css';
 import p5 from 'p5';
 import { Game } from './game-components/game';
-import ship from './images/ship3.png';
+import ship from './images/ship.png';
 
 
 let game;
@@ -16,7 +16,7 @@ export const Canvas = new p5((p5) => {
         p5.createCanvas(1200, 800);
         p5.imageMode(p5.CENTER)
 
-        p5.frameRate(30);
+        p5.frameRate(50);
         game = new Game();
         game.setup(p5, shipImage);
 
