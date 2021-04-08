@@ -5,7 +5,7 @@ import { Life } from './life';
 import { Score } from './score';
 
 export class Game {
-    constructor(started = false) {
+    constructor(started = false, level = 1) {
         this.started = started;
         this.gameover = false;
         this.gameoverScreen;
@@ -20,7 +20,7 @@ export class Game {
     setup(p5, shipImage, heartImage) {
         this.ship.image = shipImage;
         for (let i = 0; i < 3; i++) this.lifes.push(new Life(heartImage))
-        this.createInitialAsteroids(p5, 10, 'X');
+        this.createInitialAsteroids(p5, 5, 'X');
         this.createStars(p5);
     }
 
