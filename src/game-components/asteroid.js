@@ -75,8 +75,8 @@ export class Asteroid {
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
         p5.strokeWeight(8);
-        p5.stroke('lightgray');
-        p5.fill('gray')
+        p5.stroke('gray');
+        p5.fill(52, 53, 55)
         this.drawPolygon(p5, 0, 0, this.radius, this.sides);
         p5.pop();
     }

@@ -24,7 +24,7 @@ export const Canvas = new p5((p5) => {
 
     p5.draw = () => {
         p5.clear();
-        p5.background(0, 0, 0)
+        p5.background(1, 5, 15)
         game.draw(p5);
     }
 
