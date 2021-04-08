@@ -7,13 +7,14 @@ body {
 }
 
 .title-container {
-    margin: auto;
+    margin: 20px auto;
 }
 
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 canvas {
@@ -24,10 +25,10 @@ canvas {
 }
 
 button {
-    position: absolute;
     background-color: transparent;
     color: #00ca8d;
     border-radius: 0px;
     padding: 10px 30px;
     border: 2px solid tomato;
+    left: 100px;
 }

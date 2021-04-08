@@ -35,6 +35,7 @@ export const Canvas = new p5((p5) => {
 
         } else if (game.gameover) {
             game.gameoverScreen = new GameOver(game.score.value);
+            p5.frameRate(1);
             game.gameoverScreen.draw(p5);
 
         } else {
@@ -50,4 +51,3 @@ export const Canvas = new p5((p5) => {
         resetSketch(p5, true);
     })
 }, container);
-
