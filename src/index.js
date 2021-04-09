@@ -47,7 +47,7 @@ export const Canvas = new p5((p5) => {
 
             if (game.lvlCompleted) {
                 const oldGame = game;
-                game = new Game(p5, oldGame.level + 1, oldGame.score)
+                game = new Game(p5, oldGame.level + 1, oldGame.score.value)
                 game.setup(p5, ship, heart);
                 startmenu = new StartMenu(p5, game.level);
             }

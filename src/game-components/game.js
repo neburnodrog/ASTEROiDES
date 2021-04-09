@@ -28,7 +28,7 @@ export class Game {
     createInitialAsteroids(p5, howMany, size) {
         for (let i = 0; i < howMany; i++) {
             let initialPosition = this.initialAsteroidPosition(p5);
-            let initialVelocity = this.initialAsteroidVelocity(3);
+            let initialVelocity = this.initialAsteroidVelocity(4);
             this.asteroids.push(new Asteroid(size, initialPosition, initialVelocity));
         }
     }
@@ -83,13 +83,13 @@ export class Game {
 
             if (size === 'X') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
                 ]);
             } else if (size === 'M') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(7)),
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(7)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(8)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(8)),
                 ]);
             }
         });

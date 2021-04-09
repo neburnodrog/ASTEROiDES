@@ -8,7 +8,7 @@ export class Shot {
     }
 
     calcVelocityComponents() {
-        const absoluteSpeed = 10;
+        const absoluteSpeed = 15;
         return {
             x: Math.cos(this.direction) * absoluteSpeed,
             y: Math.sin(this.direction) * absoluteSpeed,

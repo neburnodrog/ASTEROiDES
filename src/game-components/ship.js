@@ -38,7 +38,7 @@ export class Ship {
 
     calcAcceleration(p5) {
         if (p5.keyIsDown(87) || p5.keyIsDown(38)) {
-            this.acceleration += .006;
+            this.acceleration += .06;
         } else {
             this.acceleration = 0;
         }
