@@ -1,8 +1,10 @@
-import { Ship } from './ship';
-import { Asteroid } from './asteroid';
+import Ship from './ship';
+import Asteroid from './asteroid';
 import { Stars } from './stars';
-import { Life } from './life';
-import { Score } from './score';
+import Life from './life';
+import Score from './score';
+import AsteroidDebris from './asteroidDebris';
+import { randomInteger } from "../helpers/helpers";
 
 export class Game {
     constructor(p5, level = 1, score = 0) {
@@ -16,6 +18,7 @@ export class Game {
         this.stars = new Stars(p5);
         this.ship = new Ship(p5);
         this.asteroids = [];
+        this.asteroidDebris = [];
     }
 
     setup(p5, shipImage, heartImage) {
@@ -79,6 +82,8 @@ export class Game {
         let explodedAsteroids = this.asteroids.filter(asteroid => asteroid.exploded);
 
         explodedAsteroids.map(explodedAsteroid => {
+            this.createDebris(explodedAsteroid);
+
             let { size, position } = { ...explodedAsteroid };
 
             if (size === 'X') {
@@ -93,6 +98,17 @@ export class Game {
                 ]);
             }
         });
+    }
+
+    randomNumOfDebris(radius) {
+        return Math.floor(randomInteger(1, 3) * Math.sqrt(radius));
+    };
+
+    createDebris(explodedAsteroid) {
+        const totalAmountOfDebris = this.randomNumOfDebris(explodedAsteroid.radius);
+        for (let i = 0; i < totalAmountOfDebris; i++) {
+            this.asteroidDebris.push(new AsteroidDebris(totalAmountOfDebris, explodedAsteroid));
+        }
     }
 
     cleanExplodedAsteroids() {
@@ -113,7 +129,6 @@ export class Game {
                 } else {
                     this.lifes.pop();
                 }
-
                 this.ship.explosion();
             }
         });
@@ -125,6 +140,8 @@ export class Game {
         this.asteroids.forEach(asteroid => asteroid.draw(p5));
         this.ship.draw(p5);
         this.ship.shots.forEach(shot => shot.draw(p5));
+        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
+        this.asteroidDebris.forEach(debris => debris.draw(p5));
 
         // collisions (asteroids & ship)
         this.checkIfCollisions(p5);
@@ -138,6 +155,5 @@ export class Game {
         // draw lifes && score
         this.lifes.forEach((life, index) => life.draw(p5, index + 1));
         this.score.draw(p5);
-
     }
 }

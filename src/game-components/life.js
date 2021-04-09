@@ -1,6 +1,5 @@
-import p5 from "p5";
 
-export class Life {
+export default class Life {
     constructor(image) {
         this.image = image;
     }

@@ -1,5 +1,5 @@
 
-export class Score {
+export default class Score {
     constructor(score) {
         this.value = score;
     }

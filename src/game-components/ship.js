@@ -1,6 +1,7 @@
-import { Shot } from "./shot";
+import Shot from "./shot";
+import { randomInteger } from '../helpers/helpers';
 
-export class Ship {
+export default class Ship {
     constructor(p5) {
         this.image;
         this.shipLength = 50;
@@ -18,6 +19,7 @@ export class Ship {
         this.angleOfMovement = 0;
         this.angleOfShip = 0; // expressed in radians
         this.shots = [];
+        this.shipDebris = [];
     }
 
     rotateShip(p5) {
@@ -115,6 +117,7 @@ export class Ship {
 
     explosion() {
         console.log("explosion")
+        const randomDebris = randomInteger(5, 10);
     }
 
     draw(p5) {

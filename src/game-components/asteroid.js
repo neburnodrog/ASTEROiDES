@@ -1,30 +1,21 @@
+import { drawPolygon, randomInteger } from '../helpers/helpers';
 
-export class Asteroid {
+export default class Asteroid {
     constructor(size, position, velocity) {
         this.size = size;
         this.position = position;
         this.radius = this.initialRadius(size);
-        this.sides = Math.floor(Math.random() * 4) + 7;
+        this.sides = randomInteger(7, 12);
         this.rotation = { angle: 0, velocity: Math.random() / 50 }
         this.velocity = velocity;
         this.exploded = false;
+        this.strokes = { X: 8, M: 6, S: 4 }
     }
 
     initialRadius(size) {
         if (size === 'X') return Math.random() * 25 + 70;
         if (size === 'M') return Math.random() * 15 + 40;
         if (size === 'S') return Math.random() * 10 + 20;
-    }
-
-    drawPolygon(p5, x, y, radius, npoints) {
-        let angle = p5.TWO_PI / npoints;
-        p5.beginShape();
-        for (let a = 0; a < p5.TWO_PI; a += angle) {
-            let sx = x + p5.cos(a) * radius;
-            let sy = y + p5.sin(a) * radius;
-            p5.vertex(sx, sy);
-        }
-        p5.endShape(p5.CLOSE);
     }
 
     calcRotation() {
@@ -59,10 +50,10 @@ export class Asteroid {
         p5.push();
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
-        p5.strokeWeight(8);
+        p5.strokeWeight(this.strokes[this.size]);
         p5.stroke("#F29F38");
         p5.fill("#A65E05")
-        this.drawPolygon(p5, 0, 0, this.radius, this.sides);
+        drawPolygon(p5, 0, 0, this.radius, this.sides);
         p5.pop();
     }
 }

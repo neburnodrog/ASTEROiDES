@@ -1,5 +1,5 @@
 
-export class Shot {
+export default class Shot {
     constructor(x, y, direction) {
         this.position = { x: x, y: y }
         this.direction = direction;
