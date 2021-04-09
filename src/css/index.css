@@ -1,19 +1,6 @@
 body {
     margin: 0;
     background-color: #020f1b;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.title-container {
-    margin: 20px auto;
-}
-
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
 }
 
@@ -21,14 +8,17 @@ canvas {
     border: 2px solid black;
     border-radius: 5px;
     box-shadow: 2px 2px 2px;
-    margin: auto;
+    margin: 0;
+    padding: 0;
 }
 
 button {
+    position: absolute;
     background-color: transparent;
-    color: #00ca8d;
+    color: #afe4ff;
     border-radius: 0px;
     padding: 10px 30px;
-    border: 2px solid tomato;
-    left: 100px;
+    border: 2px solid #f29f38;
+    right: 0px;
+    top: 0px;
 }

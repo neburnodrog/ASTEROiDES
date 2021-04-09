@@ -1,19 +1,20 @@
 import { Ship } from './ship';
 import { Asteroid } from './asteroid';
-import { Star } from './star';
+import { Stars } from './stars';
 import { Life } from './life';
 import { Score } from './score';
 
 export class Game {
-    constructor(started = false, level = 1) {
-        this.started = started;
+    constructor(p5, level = 1) {
         this.gameover = false;
         this.gameoverScreen;
         this.lifes = [];
         this.score = new Score();
+        this.level = level;
+        this.lvlCompleted = false;
 
-        this.stars = [];
-        this.ship = new Ship();
+        this.stars = new Stars(p5);
+        this.ship = new Ship(p5);
         this.asteroids = [];
     }
 
@@ -21,14 +22,6 @@ export class Game {
         this.ship.image = shipImage;
         for (let i = 0; i < 3; i++) this.lifes.push(new Life(heartImage))
         this.createInitialAsteroids(p5, 5, 'X');
-        this.createStars(p5);
-    }
-
-    // STARS
-    createStars(p5) {
-        for (let i = 0; i < 1000; i++) {
-            this.stars.push(new Star(p5))
-        }
     }
 
     // ASTEROIDS
@@ -51,7 +44,7 @@ export class Game {
         let x = p5.width * Math.random();
         let y = p5.height * Math.random();
         // while asteroid is overlapping with the ship's initial position:
-        while (p5.dist(x, y, p5.width / 2, p5.height / 2) < 2 * 50) {
+        while (p5.dist(x, y, p5.width / 2, p5.height / 2) < 200) {
             x = p5.width * Math.random();
             y = p5.height * Math.random();
         }
@@ -125,7 +118,7 @@ export class Game {
 
     // DRAW
     draw(p5) {
-        this.stars.forEach(star => star.draw(p5));
+        this.stars.draw(p5);
         this.asteroids.forEach(asteroid => asteroid.draw(p5));
         this.ship.draw(p5);
         this.ship.shots.forEach(shot => shot.draw(p5));

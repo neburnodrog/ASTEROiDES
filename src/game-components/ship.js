@@ -1,13 +1,13 @@
 import { Shot } from "./shot";
 
 export class Ship {
-    constructor() {
+    constructor(p5) {
         this.image;
         this.shipLength = 50;
         this.shipWidth = 30;
         this.position = {
-            x: 600,
-            y: 400,
+            x: p5.width / 2,
+            y: p5.height / 2,
         }
         this.velocity = {
             x: 0,
