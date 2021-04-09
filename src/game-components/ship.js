@@ -24,9 +24,9 @@ export default class Ship {
 
     rotateShip(p5) {
         if (p5.keyIsDown(68) || p5.keyIsDown(39)) {
-            this.angleOfShip += Math.PI / 60;
+            this.angleOfShip += Math.PI / 50;
         } else if (p5.keyIsDown(65) || p5.keyIsDown(37)) {
-            this.angleOfShip -= Math.PI / 60;
+            this.angleOfShip -= Math.PI / 50;
         }
 
         if (this.angleOfShip > 2 * Math.PI) {
@@ -40,7 +40,7 @@ export default class Ship {
 
     calcAcceleration(p5) {
         if (p5.keyIsDown(87) || p5.keyIsDown(38)) {
-            this.acceleration += .06;
+            this.acceleration += .008;
         } else {
             this.acceleration = 0;
         }
