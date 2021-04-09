@@ -11,9 +11,9 @@ export class Asteroid {
     }
 
     initialRadius(size) {
-        if (size === 'X') return Math.random() * 25 + 50;
-        if (size === 'M') return Math.random() * 15 + 30;
-        if (size === 'S') return Math.random() * 10 + 8;
+        if (size === 'X') return Math.random() * 25 + 70;
+        if (size === 'M') return Math.random() * 15 + 40;
+        if (size === 'S') return Math.random() * 10 + 20;
     }
 
     drawPolygon(p5, x, y, radius, npoints) {

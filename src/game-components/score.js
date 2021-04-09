@@ -1,7 +1,7 @@
 
 export class Score {
-    constructor() {
-        this.value = 0;
+    constructor(score) {
+        this.value = score;
     }
 
     draw(p5) {

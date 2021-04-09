@@ -5,11 +5,11 @@ import { Life } from './life';
 import { Score } from './score';
 
 export class Game {
-    constructor(p5, level = 1) {
+    constructor(p5, level = 1, score = 0) {
         this.gameover = false;
         this.gameoverScreen;
         this.lifes = [];
-        this.score = new Score();
+        this.score = new Score(score);
         this.level = level;
         this.lvlCompleted = false;
 
@@ -21,14 +21,14 @@ export class Game {
     setup(p5, shipImage, heartImage) {
         this.ship.image = shipImage;
         for (let i = 0; i < 3; i++) this.lifes.push(new Life(heartImage))
-        this.createInitialAsteroids(p5, 5, 'X');
+        this.createInitialAsteroids(p5, this.level ** 2 + 5, 'X');
     }
 
     // ASTEROIDS
     createInitialAsteroids(p5, howMany, size) {
         for (let i = 0; i < howMany; i++) {
             let initialPosition = this.initialAsteroidPosition(p5);
-            let initialVelocity = this.initialAsteroidVelocity(2);
+            let initialVelocity = this.initialAsteroidVelocity(3);
             this.asteroids.push(new Asteroid(size, initialPosition, initialVelocity));
         }
     }
@@ -83,13 +83,13 @@ export class Game {
 
             if (size === 'X') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(4)),
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(4)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
+                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(5)),
                 ]);
             } else if (size === 'M') {
                 this.asteroids = this.asteroids.concat([
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(7)),
+                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(7)),
                 ]);
             }
         });
@@ -97,6 +97,9 @@ export class Game {
 
     cleanExplodedAsteroids() {
         this.asteroids = this.asteroids.filter(asteroid => !asteroid.exploded)
+        if (this.asteroids.length === 0) {
+            this.lvlCompleted = true;
+        }
     }
 
     checkIfCollisions(p5) {
