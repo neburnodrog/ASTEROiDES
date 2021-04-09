@@ -1,6 +1,7 @@
 # ASTEROiDES
 
-the game of asteroids with p5js
+- My personal version of the game of asteroids using the p5.js library.
+- Bundled with Webpack
 
 ## Controls:
 - AWDS + G for shooting.
