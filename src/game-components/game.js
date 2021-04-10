@@ -137,11 +137,12 @@ export class Game {
     // DRAW
     draw(p5) {
         this.stars.draw(p5);
-        this.asteroids.forEach(asteroid => asteroid.draw(p5));
-        this.ship.draw(p5);
-        this.ship.shots.forEach(shot => shot.draw(p5));
         this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
         this.asteroidDebris.forEach(debris => debris.draw(p5));
+        this.ship.shots.forEach(shot => shot.draw(p5));
+        this.ship.draw(p5);
+        this.asteroids.forEach(asteroid => asteroid.draw(p5));
+
 
         // collisions (asteroids & ship)
         this.checkIfCollisions(p5);

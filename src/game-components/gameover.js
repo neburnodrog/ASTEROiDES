@@ -4,8 +4,9 @@ export class GameOver {
     }
 
     draw(p5) {
-        p5.background(80, 0, 0, 5);
+
         p5.push()
+        p5.background(80, 0, 0, 5);
         p5.textSize(42);
         p5.fill("#AFE4FF");
         p5.textAlign(p5.CENTER, p5.CENTER)
