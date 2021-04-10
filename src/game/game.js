@@ -1,10 +1,14 @@
-import Ship from './ship';
-import Asteroid from './asteroid';
-import { Stars } from './stars';
-import Life from './life';
-import Score from './score';
-import AsteroidDebris from './asteroidDebris';
-import { randomInteger } from "../helpers/helpers";
+/** STATES */
+import { GameOverScreen } from './game-state/gameOverScreen';
+import { StartMenuScreen } from './game-state/startMenuScreen';
+
+/** GAME ELEMENTS */
+import Ship from './game-elements/ship';
+import Asteroid from './game-elements/asteroid';
+import Life from './game-elements/life';
+import Score from './game-elements/score';
+import AsteroidDebris from './game-elements/asteroidDebris';
+import { randomInteger } from "./helpers/helpers";
 
 export class Game {
     constructor(p5) {
@@ -16,7 +20,7 @@ export class Game {
         this.gameOver = false;
         this.levelCompleted = false;
         this.level = 1;
-        this.score = 0;
+        this.score;
 
         // VIEWS
         this.gameOverScreen;
@@ -35,11 +39,12 @@ export class Game {
         this.gameOverScreen = new GameOverScreen(this.p5, this);
         this.startMenuScreen = new StartMenuScreen(this.p5, this);
         this.levelUpScreen = new LevelUpScreen(this.p5, this);
+        this.score = new Score(this.p5);
 
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
-        this.lifes = new Array().fill(3).map(slot => new Life(heartImage))
-        this.createInitialAsteroids(this.level ** 2 + 5, 'X');
+        this.lifes = new Array().fill(3).map(() => new Life(heartImage))
+        this.createInitialAsteroids(3 + 2 * this.level, 'X');
     }
 
     // ASTEROIDS
@@ -138,7 +143,7 @@ export class Game {
     checkIfCollisions() {
         this.asteroids.forEach(asteroid => {
             const { x, y } = { ...asteroid.position }
-            const distance = this.p5.dist(x, y, this.ship.position.x, this.ship.position.y);
+            const distance = this.p5.dist(x, y, this.ship.position.x - 5, this.ship.position.y);
 
             if (distance < asteroid.radius + 20) {
                 if (this.lifes.length === 0) {

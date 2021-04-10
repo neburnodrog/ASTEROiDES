@@ -19,7 +19,7 @@ export class GameOverScreen {
         p5.fill(this.color);
 
         p5.text('GAME OVER', 0, 0)
-        p5.text(`SCORE: ${this.game.score}`, 0, 100);
+        p5.text(`SCORE: ${this.game.score.value}`, 0, 100);
         p5.text('PRESS SPACE TO PLAY AGAIN', 0, 200)
 
         p5.pop();

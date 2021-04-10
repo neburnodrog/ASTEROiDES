@@ -1,35 +1,43 @@
-import './css/index.css';
 import p5 from 'p5';
-import { Game } from './game-components/game';
-import { GameOver } from './game-state/gameover';
+import './css/index.css';
+
+// IMAGES
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
-import { StartMenu, LevelScreen } from './game-state/startmenu';
-import Background from 'background';
 
+// GAME STATE COMPONENTS
+import { StartMenuScreen, LevelUpScreen } from './game/game-state/startMenuScreen';
+import { GameOverScreen } from './game/game-state/gameOverScreen';
+
+// GAME COMPONENTS
+import Background from 'background';
+import { Game } from './game/game';
+
+// global variables
 let background;
 let startmenu;
 let game;
 let ship;
 let heart;
 
+// p5 SKETCH
 export const Canvas = new p5((p5) => {
+    const resetSketch = (p5) => {
+        game = new Game(p5);
+        game.setup(ship, heart);
+    }
+
     p5.preload = () => {
         ship = p5.loadImage(shipImage);
         heart = p5.loadImage(heartImage);
     }
 
-    const resetSketch = (p5, level) => {
-        game = new Game(p5, level);
-        game.setup(ship, heart);
-    }
-
     p5.setup = () => {
         p5.createCanvas(window.innerWidth, window.innerHeight);
+        p5.imageMode(p5.CENTER);
+
         background = new Background(p5);
-        p5.imageMode(p5.CENTER)
-        resetSketch(p5, 1);
-        startmenu = new StartMenu(game.level);
+        resetSketch(p5);
     }
 
     p5.draw = () => {
@@ -39,13 +47,13 @@ export const Canvas = new p5((p5) => {
             startmenu.draw(p5)
 
         } else if (game.gameover) {
-            game.gameoverScreen = new GameOver(game.score.value);
+            game.gameoverScreen = new GameOverScreen(game.score.value);
             p5.frameRate(1);
             game.gameoverScreen.draw(p5);
             p5.keyPressed = () => {
                 if (p5.keyCode === 32 || p5.keyCode == 13) {
                     resetSketch(p5, 1);
-                    startmenu = new StartMenu(game.level);
+                    startmenu = new StartMenuScreen(game.level);
                 }
             }
 
@@ -56,7 +64,7 @@ export const Canvas = new p5((p5) => {
             if (game.lvlCompleted) {
                 const newGame = new Game(p5, game.level + 1, game.score.value)
                 newGame.setup(p5, ship, heart);
-                const levelScreen = new LevelScreen(p5, newGame.level);
+                const levelScreen = new LevelUpScreen(p5, newGame.level);
                 levelScreen.draw(p5);
 
                 if (levelScreen.started) {
@@ -68,5 +76,21 @@ export const Canvas = new p5((p5) => {
 });
 
 window.onkeydown = function (e) {
-    return !(e.keyCode == 32 && e.target == document.body);
+    if (e.keyCode == 32 && e.target == document.body) e.preventDefault();
+};
+
+window.onkeydown = function (e) {
+    if (e.keyCode == 37 && e.target == document.body) e.preventDefault();
+};
+
+window.onkeydown = function (e) {
+    if (e.keyCode == 38 && e.target == document.body) e.preventDefault();
+};
+
+window.onkeydown = function (e) {
+    if (e.keyCode == 39 && e.target == document.body) e.preventDefault();
+};
+
+window.onkeydown = function (e) {
+    if (e.keyCode == 40 && e.target == document.body) e.preventDefault();
 };
