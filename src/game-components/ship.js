@@ -24,9 +24,9 @@ export default class Ship {
 
     rotateShip(p5) {
         if (p5.keyIsDown(68) || p5.keyIsDown(39)) {
-            this.angleOfShip += Math.PI / 50;
+            this.angleOfShip += Math.PI / 40;
         } else if (p5.keyIsDown(65) || p5.keyIsDown(37)) {
-            this.angleOfShip -= Math.PI / 50;
+            this.angleOfShip -= Math.PI / 40;
         }
 
         if (this.angleOfShip > 2 * Math.PI) {
@@ -105,7 +105,7 @@ export default class Ship {
 
     shoot(p5) {
         p5.keyPressed = () => {
-            if (p5.keyCode === 71 || p5.keyCode === 190) {
+            if (p5.keyCode === 32 || p5.keyCode === 13) {
                 this.shots.push(new Shot(this.position.x, this.position.y, this.angleOfShip));
             }
         }
