@@ -4,13 +4,16 @@ import { Game } from './game-components/game';
 import { GameOver } from './game-components/gameover';
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
-import { StartMenu } from './game-components/startmenu';
+import { StartMenu, LevelScreen } from './game-components/startmenu';
 
 let startmenu;
 let game;
 let ship;
 let heart;
 const container = document.querySelector('.container');
+window.onkeydown = function (e) {
+    return !(e.keyCode == 32 && e.target == document.body);
+};
 
 export const Canvas = new p5((p5) => {
     p5.preload = () => {
@@ -31,6 +34,8 @@ export const Canvas = new p5((p5) => {
     }
 
     p5.draw = () => {
+        p5.background(1, 5, 15);
+
         if (startmenu.started === false) {
             startmenu.draw(p5)
 
@@ -38,25 +43,28 @@ export const Canvas = new p5((p5) => {
             game.gameoverScreen = new GameOver(game.score.value);
             p5.frameRate(1);
             game.gameoverScreen.draw(p5);
+            p5.keyPressed = () => {
+                if (p5.keyCode === 32 || p5.keyCode == 13) {
+                    resetSketch(p5, 1);
+                    startmenu = new StartMenu(p5, game.level);
+                }
+            }
 
         } else {
             p5.frameRate(60)
             p5.clear();
-            p5.background(1, 5, 15)
-            game.draw(p5);
+            game.draw(p5)
 
             if (game.lvlCompleted) {
-                const oldGame = game;
-                game = new Game(p5, oldGame.level + 1, oldGame.score.value)
-                game.setup(p5, ship, heart);
-                startmenu = new StartMenu(p5, game.level);
+                const newGame = new Game(p5, game.level + 1, game.score.value)
+                newGame.setup(p5, ship, heart);
+                const levelScreen = new LevelScreen(p5, newGame.level);
+                levelScreen.draw(p5);
+
+                if (levelScreen.started) {
+                    game = newGame;
+                }
             }
         }
     }
-
-    const navLeft = document.querySelector("#new-game");
-    navLeft.addEventListener("click", () => {
-        startmenu.started = true;
-        resetSketch(p5, 1);
-    })
 }, container);

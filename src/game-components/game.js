@@ -21,6 +21,10 @@ export class Game {
         this.asteroidDebris = [];
     }
 
+    stop() {
+        // stop everything from moving
+    }
+
     setup(p5, shipImage, heartImage) {
         this.ship.image = shipImage;
         for (let i = 0; i < 3; i++) this.lifes.push(new Life(heartImage))

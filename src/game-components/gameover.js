@@ -4,7 +4,6 @@ export class GameOver {
     }
 
     draw(p5) {
-
         p5.push()
         p5.background(80, 0, 0, 5);
         p5.textSize(42);
@@ -13,6 +12,7 @@ export class GameOver {
         p5.translate(p5.width / 2, p5.height / 2)
         p5.text('GAME OVER', 0, 0)
         p5.text(`SCORE: ${this.score}`, 0, 100);
+        p5.text('PRESS SPACE TO RESTART', 0, 200)
         p5.pop();
     }
 }

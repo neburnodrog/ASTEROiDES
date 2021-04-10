@@ -52,10 +52,12 @@ export class LevelScreen extends StartMenu {
         p5.text('ASTEROIDES', 0, 0)
         p5.textSize(32);
         p5.text(`LEVEL: ${this.level}`, 0, 100);
-        p5.text(`PRESS A SPACE TO START`, 0, 300);
+        p5.text(`Controls: ARROWS or ASWD & ENTER or SPACE for shooting`, 0, 200);
+        p5.text(`PRESS SPACE TO START`, 0, 300);
 
         this.listenToStart(p5);
 
         p5.pop();
     }
 }
+
