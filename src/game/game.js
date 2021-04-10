@@ -10,16 +10,16 @@ import Score from './game-elements/score';
 import AsteroidDebris from './game-elements/debris';
 import { randomInteger } from "./helpers";
 
-export class Game {
-    constructor(p5) {
+export default class Game {
+    constructor(p5, started = false, level = 1) {
         this.p5 = p5;
 
         // STATES
-        this.started = false;
+        this.started = started;
         this.paused = false;
         this.gameOver = false;
         this.levelCompleted = false;
-        this.level = 1;
+        this.level = level;
         this.score;
 
         // VIEWS
@@ -34,12 +34,12 @@ export class Game {
         this.asteroidDebris = [];
     }
 
-    setup(shipImage, heartImage) {
+    setup(shipImage, heartImage, score) {
         /** INITIALIZING STATE COMPONENTS */
         this.gameOverScreen = new GameOverScreen(this.p5, this);
         this.startMenuScreen = new StartMenuScreen(this.p5, this);
         this.levelUpScreen = new LevelUpScreen(this.p5, this);
-        this.score = new Score(this.p5);
+        this.score = score
 
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
@@ -125,28 +125,33 @@ export class Game {
     }
 
     // DRAW
-    draw() {
-        // GENERAL GAME STATE CHECK
-
-        this.stars.draw();
-        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
-        this.asteroidDebris.forEach(debris => debris.draw());
-        this.ship.shots.forEach(shot => shot.draw());
-        this.ship.draw();
-        this.asteroids.forEach(asteroid => asteroid.draw());
-
-
-        // collisions (asteroids & ship)
+    playGame() {
+        // CHECK STATES   
         this.checkIfCollisions();
-
-        // collisions (asteroids & shots)
         this.checkForHits();
         this.ifExplotionsCreateNewAsteroids();
         this.cleanExplodedAsteroids();
-        this.ship.filterOldShots();
 
-        // draw lifes && score
+        // RENDER ELEMENTS
+        this.asteroidDebris.forEach(debris => debris.draw());
+        this.asteroids.forEach(asteroid => asteroid.draw());
+        this.ship.shots.forEach(shot => shot.draw());
+        this.ship.draw();
         this.lifes.forEach((life, index) => life.draw(index + 1));
         this.score.draw();
+
+        // CLEAN-UP
+        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
+    }
+
+    draw() {
+        // GENERAL GAME STATE CHECK
+        if (this.started) this.startMenuScreen.draw();
+        else if (this.gameOver) this.gameOverScreen.draw();
+        else if (this.levelCompleted) {
+            this.level++;
+            this.levelUpScreen.draw()
+        } 
+                    : this.playGame();
     }
 }

@@ -7,7 +7,7 @@ export default class AsteroidDebris {
         this.color = this.getInitialColor();
         this.sides = randomInteger(5, 14);
         this.position = { ...explodedAsteroid.position };
-        this.direction = Math.random() * 2 * Math.PI;
+        this.direction = 2 * Math.random() * Math.PI;
         this.rotation = { angle: 0, velocity: Math.random() / 50 }
         this.velocity = this.calcInitialVelocityVectors();
         this.faded = false;
@@ -74,26 +74,31 @@ export default class AsteroidDebris {
 
     // STATE CHECK
     checkIfFaded() {
-        if (this.color.stroke.A < 0) this.faded = true;
+        if (this.color.stroke.A <= 0) this.faded = true;
     }
 
     draw() {
         const p5 = this.p5;
 
+        // STATE
         this.checkIfFaded();
 
+        // CALCULATIONS
         this.calcPosition();
         this.calcRotation();
         this.calcColor();
         this.calcVelocity();
 
+        // RENDERING
         p5.push();
+
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
         p5.strokeWeight(2);
         p5.stroke(...Object.values(this.color.stroke));
         p5.fill(...Object.values(this.color.fill));
         drawPolygon(p5, 0, 0, this.radius, this.sides);
+
         p5.pop();
     }
 }

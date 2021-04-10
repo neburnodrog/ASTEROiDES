@@ -1,17 +1,18 @@
-export class GameOverScreen {
+export default class GameOverScreen {
     constructor(p5, game) {
         this.p5 = p5;
         this.game = game;
-
         this.textSize = 42;
         this.color = "#AFE4FF";
-
     }
 
     draw() {
         p5 = this.p5;
 
         p5.push()
+
+        p5.frameRate(20);
+
         p5.textAlign(p5.CENTER, p5.CENTER);
         p5.translate(p5.width / 2, p5.height / 2);
 

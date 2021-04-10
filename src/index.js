@@ -7,11 +7,12 @@ import heartImage from './images/heart.png';
 
 // GAME STATE COMPONENTS
 import { StartMenuScreen, LevelUpScreen } from './game/game-state/startMenuScreen';
-import { GameOverScreen } from './game/game-state/gameOverScreen';
+import GameOverScreen from './game/game-state/gameOverScreen';
 
 // GAME COMPONENTS
-import Background from 'background';
-import { Game } from './game/game';
+import Background from './game/game-elements/background';
+import Game from './game/game';
+import { spaceOrEnterPressed } from './game/helpers';
 
 // global variables
 let background;
@@ -19,12 +20,14 @@ let startmenu;
 let game;
 let ship;
 let heart;
+let score;
 
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
-    const resetSketch = (p5) => {
-        game = new Game(p5);
-        game.setup(ship, heart);
+    const resetSketch = (score, started, level) => {
+        game = new Game(p5, started, level);
+        score = score || new Score(p5);
+        game.setup(ship, heart, score);
     }
 
     p5.preload = () => {
@@ -35,44 +38,29 @@ export const Canvas = new p5((p5) => {
     p5.setup = () => {
         p5.createCanvas(window.innerWidth, window.innerHeight);
         p5.imageMode(p5.CENTER);
-
         background = new Background(p5);
-        resetSketch(p5);
+        resetSketch();
     }
 
     p5.draw = () => {
         background.draw();
+        game.draw();
 
-        if (startmenu.started === false) {
-            startmenu.draw(p5)
+        // handling STATE CHANGES
+        if (game.gameover && spaceOrEnterPressed(p5)) resetSketch(p5, game.score);
 
-        } else if (game.gameover) {
-            game.gameoverScreen = new GameOverScreen(game.score.value);
-            p5.frameRate(1);
-            game.gameoverScreen.draw(p5);
-            p5.keyPressed = () => {
-                if (p5.keyCode === 32 || p5.keyCode == 13) {
-                    resetSketch(p5, 1);
-                    startmenu = new StartMenuScreen(game.level);
-                }
-            }
+        if (game.levelCompleted) {
+            const newGame = new Game(p5, game.level + 1, game.score.value)
+            newGame.setup(p5, ship, heart);
+            const levelScreen = new LevelUpScreen(p5, newGame.level);
+            levelScreen.draw(p5);
 
-        } else {
-            p5.frameRate(60)
-            game.draw(p5)
-
-            if (game.lvlCompleted) {
-                const newGame = new Game(p5, game.level + 1, game.score.value)
-                newGame.setup(p5, ship, heart);
-                const levelScreen = new LevelUpScreen(p5, newGame.level);
-                levelScreen.draw(p5);
-
-                if (levelScreen.started) {
-                    game = newGame;
-                }
+            if (levelScreen.started) {
+                game = newGame;
             }
         }
     }
+
 });
 
 window.onkeydown = function (e) {
