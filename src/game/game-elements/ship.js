@@ -2,22 +2,23 @@ import Shot from "./shot";
 import { randomInteger } from '../helpers/helpers';
 
 export default class Ship {
-    constructor(p5) {
-        this.image;
+    constructor(p5, image) {
+        this.p5 = p5
+
+        // STATIC PROPERTIES
+        this.image = image;
         this.shipLength = 50;
         this.shipWidth = 30;
-        this.position = {
-            x: p5.width / 2,
-            y: p5.height / 2,
-        }
-        this.velocity = {
-            x: 0,
-            y: 0,
-        }
+
+        // DYNAMIC PROPERTIES
         this.acceleration = 0; // only when arrow_up is pressed
         this.resistance = .01;
+        this.velocity = { x: 0, y: 0, }
+        this.position = { x: p5.width / 2, y: p5.height / 2, }
         this.angleOfMovement = 0;
         this.angleOfShip = 0; // expressed in radians
+
+        // DEPENDANT ELEMENTS
         this.shots = [];
         this.shipDebris = [];
     }

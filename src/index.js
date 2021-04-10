@@ -1,19 +1,17 @@
 import './css/index.css';
 import p5 from 'p5';
 import { Game } from './game-components/game';
-import { GameOver } from './game-components/gameover';
+import { GameOver } from './game-state/gameover';
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
-import { StartMenu, LevelScreen } from './game-components/startmenu';
+import { StartMenu, LevelScreen } from './game-state/startmenu';
+import Background from 'background';
 
+let background;
 let startmenu;
 let game;
 let ship;
 let heart;
-const container = document.querySelector('.container');
-window.onkeydown = function (e) {
-    return !(e.keyCode == 32 && e.target == document.body);
-};
 
 export const Canvas = new p5((p5) => {
     p5.preload = () => {
@@ -23,18 +21,19 @@ export const Canvas = new p5((p5) => {
 
     const resetSketch = (p5, level) => {
         game = new Game(p5, level);
-        game.setup(p5, ship, heart);
+        game.setup(ship, heart);
     }
 
     p5.setup = () => {
         p5.createCanvas(window.innerWidth, window.innerHeight);
+        background = new Background(p5);
         p5.imageMode(p5.CENTER)
         resetSketch(p5, 1);
-        startmenu = new StartMenu(p5, game.level);
+        startmenu = new StartMenu(game.level);
     }
 
     p5.draw = () => {
-        p5.background(1, 5, 15);
+        background.draw();
 
         if (startmenu.started === false) {
             startmenu.draw(p5)
@@ -46,13 +45,12 @@ export const Canvas = new p5((p5) => {
             p5.keyPressed = () => {
                 if (p5.keyCode === 32 || p5.keyCode == 13) {
                     resetSketch(p5, 1);
-                    startmenu = new StartMenu(p5, game.level);
+                    startmenu = new StartMenu(game.level);
                 }
             }
 
         } else {
             p5.frameRate(60)
-            p5.clear();
             game.draw(p5)
 
             if (game.lvlCompleted) {
@@ -67,4 +65,8 @@ export const Canvas = new p5((p5) => {
             }
         }
     }
-}, container);
+});
+
+window.onkeydown = function (e) {
+    return !(e.keyCode == 32 && e.target == document.body);
+};

@@ -13,3 +13,11 @@ export function drawPolygon(p5, x, y, radius, npoints) {
     }
     p5.endShape(p5.CLOSE);
 }
+
+export function spaceOrEnterPressed(p5) {
+    p5.keyPressed = () => {
+        if (p5.keyCode === 32 || p5.keyCode === 13) {
+            return true;
+        }
+    }
+}
