@@ -4,11 +4,11 @@ import { StartMenuScreen } from './game-state/startMenuScreen';
 
 /** GAME ELEMENTS */
 import Ship from './game-elements/ship';
-import Asteroid from './game-elements/asteroid';
+import { AsteroidArray } from './game-elements/asteroid';
 import Life from './game-elements/life';
 import Score from './game-elements/score';
 import AsteroidDebris from './game-elements/asteroidDebris';
-import { randomInteger } from "./helpers/helpers";
+import { randomInteger } from "./helpers";
 
 export class Game {
     constructor(p5) {
@@ -44,39 +44,7 @@ export class Game {
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
         this.lifes = new Array().fill(3).map(() => new Life(heartImage))
-        this.createInitialAsteroids(3 + 2 * this.level, 'X');
-    }
-
-    // ASTEROIDS
-    createInitialAsteroids(howMany, size) {
-        for (let i = 0; i < howMany; i++) {
-            let initialPosition = this.initialAsteroidPosition();
-            let initialVelocity = this.initialAsteroidVelocity(4);
-            this.asteroids.push(new Asteroid(size, initialPosition, initialVelocity));
-        }
-    }
-
-    initialAsteroidVelocity(num) {
-        return {
-            x: num * (Math.random() - Math.random()),
-            y: num * (Math.random() - Math.random()),
-        }
-    }
-
-    initialAsteroidPosition() {
-        const p5 = this.p5;
-
-        let x = p5.width * Math.random();
-        let y = p5.height * Math.random();
-        // while asteroid is overlapping with the ship's initial position:
-        while (p5.dist(x, y, p5.width / 2, p5.height / 2) < 200) {
-            x = p5.width * Math.random();
-            y = p5.height * Math.random();
-        }
-        return {
-            x: x,
-            y: y,
-        }
+        this.asteroids = new AsteroidArray(this.p5, this);
     }
 
     checkForHits() {
@@ -178,7 +146,7 @@ export class Game {
         this.ship.filterOldShots();
 
         // draw lifes && score
-        this.lifes.forEach((life, index) => life.draw(, index + 1));
+        this.lifes.forEach((life, index) => life.draw(index + 1));
         this.score.draw();
     }
 }

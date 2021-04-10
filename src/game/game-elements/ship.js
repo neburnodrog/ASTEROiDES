@@ -1,7 +1,7 @@
 import Shot from "./shot";
-import { randomInteger, spaceOrEnterPressed } from '../helpers/helpers';
+import { randomInteger, spaceOrEnterPressed } from '../helpers';
 
-const PI = PI;
+const PI = Math.PI;
 
 export default class Ship {
     constructor(p5, image) {

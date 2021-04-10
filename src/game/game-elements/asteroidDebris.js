@@ -1,4 +1,4 @@
-import { drawPolygon, randomInteger } from '../helpers/helpers'
+import { drawPolygon, randomInteger } from '../helpers'
 
 export default class AsteroidDebris {
     constructor(amountOfDebris, explodedAsteroid) {
@@ -10,17 +10,16 @@ export default class AsteroidDebris {
         this.direction = Math.random() * 2 * Math.PI;
         this.rotation = { angle: 0, velocity: Math.random() / 50 }
         this.velocity = this.calcInitialVelocityVectors();
-        this.time;
         this.faded = false;
-        setInterval(() => this.time++, 1000);
     }
 
+    // DYNAMICALLY COMPUTED INITIAL PROPERTY VALUES
     getInitialColor() {
-        const radius = this.radius;
         let maxAlpha;
-        if (radius < 10) maxAlpha = randomInteger(200, 250);
-        else if (radius < 100) maxAlpha = randomInteger(150, 200);
-        else if (radius < 200) maxAlpha = randomInteger(100, 150);
+
+        if (this.radius < 10) maxAlpha = randomInteger(200, 250);
+        else if (this.radius < 100) maxAlpha = randomInteger(150, 200);
+        else if (this.radius < 200) maxAlpha = randomInteger(100, 150);
         else maxAlpha = randomInteger(50, 100);
 
         return {
@@ -48,6 +47,7 @@ export default class AsteroidDebris {
         }
     }
 
+    // CALCULATIONS
     calcPosition() {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
@@ -72,13 +72,21 @@ export default class AsteroidDebris {
         }
     }
 
+    // STATE CHECK
     checkIfFaded() {
-        if (this.time > 1) this.faded = true;
-        if (this.faded === true) console.log(this.faded);
-
+        if (this.color.stroke.A < 0) this.faded = true;
     }
 
-    draw(p5) {
+    draw() {
+        const p5 = this.p5;
+
+        this.checkIfFaded();
+
+        this.calcPosition();
+        this.calcRotation();
+        this.calcColor();
+        this.calcVelocity();
+
         p5.push();
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
@@ -87,11 +95,5 @@ export default class AsteroidDebris {
         p5.fill(...Object.values(this.color.fill));
         drawPolygon(p5, 0, 0, this.radius, this.sides);
         p5.pop();
-
-        this.checkIfFaded();
-        this.calcPosition();
-        this.calcRotation();
-        this.calcColor();
-        this.calcVelocity();
     }
 }
