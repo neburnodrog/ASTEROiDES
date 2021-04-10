@@ -4,10 +4,10 @@ import { StartMenuScreen } from './game-state/startMenuScreen';
 
 /** GAME ELEMENTS */
 import Ship from './game-elements/ship';
-import { AsteroidArray } from './game-elements/asteroid';
+import { AsteroidArray } from './game-elements/asteroids';
 import Life from './game-elements/life';
 import Score from './game-elements/score';
-import AsteroidDebris from './game-elements/asteroidDebris';
+import AsteroidDebris from './game-elements/debris';
 import { randomInteger } from "./helpers";
 
 export class Game {
@@ -48,7 +48,7 @@ export class Game {
     }
 
     checkForHits() {
-        this.asteroids.forEach(asteroid => {
+        this.asteroids.array.forEach(asteroid => {
             this.ship.shots.forEach(shot => {
                 let distance = this.p5.dist(
                     asteroid.position.x,
@@ -90,16 +90,16 @@ export class Game {
         });
     }
 
-    randomNumOfDebris(radius) {
-        return Math.floor(randomInteger(1, 3) * Math.sqrt(radius));
-    };
-
     createDebris(explodedAsteroid) {
         const totalAmountOfDebris = this.randomNumOfDebris(explodedAsteroid.radius);
         for (let i = 0; i < totalAmountOfDebris; i++) {
             this.asteroidDebris.push(new AsteroidDebris(totalAmountOfDebris, explodedAsteroid));
         }
     }
+
+    randomNumOfDebris(radius) {
+        return Math.floor(randomInteger(1, 3) * Math.sqrt(radius));
+    };
 
     cleanExplodedAsteroids() {
         this.asteroids = this.asteroids.filter(asteroid => !asteroid.exploded)
@@ -126,7 +126,7 @@ export class Game {
 
     // DRAW
     draw() {
-        const p5 = this.p5
+        // GENERAL GAME STATE CHECK
 
         this.stars.draw();
         this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);

@@ -5,7 +5,7 @@ export class AsteroidArray {
     constructor(p5, game, size = 'X') {
         this.p5 = p5;
         this.game = game;
-        this.asteroids = this.createInitialAsteroids(size);
+        this.array = this.createInitialAsteroids(size);
     }
 
     createInitialAsteroids(size = 'X') {
@@ -31,13 +31,13 @@ export class AsteroidArray {
         }
 
         const howMany = 3 + 2 * this.level;
-        this.asteroids = new Array(howMany)
+        array = new Array(howMany)
             .fill()
             .map(() => new Asteroid(this.p5, size, initialPosition(), initialVelocity()));
     }
 
     draw() {
-        this.asteroids.forEach(asteroid => asteroid.draw());
+        array.forEach(asteroid => asteroid.draw());
     }
 }
 
