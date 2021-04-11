@@ -7,7 +7,7 @@ export default class GameOverScreen {
     }
 
     draw() {
-        p5 = this.p5;
+        const p5 = this.p5;
 
         p5.push()
 

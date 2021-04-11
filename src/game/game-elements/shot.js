@@ -1,31 +1,22 @@
+import { calcVelocityComponents } from '../helpers';
 
 export default class Shot {
-    constructor(x, y, direction) {
+    constructor(p5, x, y, direction) {
+        this.p5 = p5;
         this.position = { x: x, y: y }
-        this.direction = direction;
-        this.velocity = { x: 0, y: 0 };
+        this.velocity = calcVelocityComponents(direction, 15);
         this.hit = false;
     }
 
-    calcVelocityComponents() {
-        const absoluteSpeed = 15;
-        return {
-            x: Math.cos(this.direction) * absoluteSpeed,
-            y: Math.sin(this.direction) * absoluteSpeed,
-        }
-    }
-
     calcPosition() {
-        return {
-            x: this.position.x + this.velocity.x,
-            y: this.position.y + this.velocity.y
-        }
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
     }
 
-    draw(p5) {
+    draw() {
+        const p5 = this.p5;
         // calculations
-        this.velocity = this.calcVelocityComponents();
-        this.position = this.calcPosition();
+        this.calcPosition();
 
         // draw the shot
         p5.push();

@@ -1,54 +1,81 @@
 import { drawPolygon, randomInteger } from '../helpers';
+import AsteroidDebris from './asteroidDebris';
 
-
-export class AsteroidArray {
-    constructor(p5, game, size = 'X') {
+export default class Asteroids {
+    constructor(p5, level, size = 'X') {
         this.p5 = p5;
-        this.game = game;
+        this.level = level;
         this.array = this.createInitialAsteroids(size);
+        this.asteroidDebris = [];
     }
 
-    createInitialAsteroids(size = 'X') {
-        function initialPosition() {
-            const { width, height, dist } = { ...this.p5 }
-
-            let x = width * Math.random();
-            let y = height * Math.random();
-
-            while (dist(x, y, width / 2, height / 2) < 200) {
-                x = width * Math.random();
-                y = height * Math.random();
-            }
-
-            return { x: x, y: y, }
-        }
-
-        function initialVelocity() {
-            return {
-                x: Math.random() * (this.game.level + 1),
-                y: Math.random() * (this.game.level + 1),
-            }
-        }
-
-        const howMany = 3 + 2 * this.level;
-        array = new Array(howMany)
+    createInitialAsteroids() {
+        return new Array(this.level * 3 + 2)
             .fill()
-            .map(() => new Asteroid(this.p5, size, initialPosition(), initialVelocity()));
+            .map(() => new Asteroid(this.p5, 'X', this.initialPosition()));
     }
+
+    initialPosition() {
+        const { width, height } = { ...this.p5 }
+
+        let x = width * Math.random();
+        let y = height * Math.random();
+
+        while (this.p5.dist(x, y, width / 2, height / 2) < 200) {
+            x = width * Math.random();
+            y = height * Math.random();
+        }
+
+        return { x: x, y: y, }
+    }
+
+    addAsteroids(howMany, size, position) {
+        for (let i = 0; i < howMany; i++) this.array.push(new Asteroid(this.p5, size, position));
+    }
+
+    handleExplodedAsteroids(explodedAsteroids) {
+        explodedAsteroids.map(asteroid => {
+            this.createDebris(asteroid);
+
+            let { size, position } = { ...asteroid };
+            if (size === 'X') this.addAsteroids(2, 'M', { ...position })
+            else if (size === 'M') this.addAsteroids(2, 'S', { ...position });
+        });
+    }
+
+    cleanExplodedAsteroids() {
+        this.array = this.array.filter(asteroid => !asteroid.exploded)
+    }
+
+    createDebris(asteroid) {
+        const totalDebris = this.randomNumOfDebris(asteroid.radius);
+        for (let i = 0; i < totalDebris; i++) {
+            this.asteroidDebris.push(new AsteroidDebris(this.p5, totalDebris, asteroid));
+        }
+    }
+
+    randomNumOfDebris(radius) {
+        return Math.floor(randomInteger(1, 3) * Math.sqrt(radius));
+    };
 
     draw() {
-        array.forEach(asteroid => asteroid.draw());
+        this.array.forEach(asteroid => asteroid.draw());
+        this.asteroidDebris.forEach(debris => debris.draw());
+        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
     }
 }
 
 
 class Asteroid {
-    constructor(p5, size, position, velocity) {
+    constructor(p5, size, position) {
         this.p5 = p5;
 
         this.size = size;
         this.position = position;
-        this.velocity = velocity;
+
+        this.asteroidVelocityMap = { X: 1, M: 3, S: 7 }
+        this.velocity = this.initialVelocity();
+
 
         this.sides = randomInteger(7, 12);
         this.radius = this.initialRadius(size);
@@ -57,6 +84,13 @@ class Asteroid {
         this.strokes = { X: 8, M: 6, S: 4 }
         // this.color = {R: 255, G: 255, B: 255} BUT RANDOM
         this.exploded = false;
+    }
+
+    initialVelocity() {
+        return {
+            x: Math.random() * this.asteroidVelocityMap[this.size],
+            y: Math.random() * this.asteroidVelocityMap[this.size],
+        }
     }
 
     initialRadius(size) {

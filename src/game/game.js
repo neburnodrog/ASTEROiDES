@@ -1,14 +1,11 @@
 /** STATES */
-import { GameOverScreen } from './game-state/gameOverScreen';
-import { StartMenuScreen } from './game-state/startMenuScreen';
+import GameOverScreen from './game-state/gameOverScreen';
+import { StartMenuScreen, LevelUpScreen } from './game-state/startMenuScreen';
 
 /** GAME ELEMENTS */
 import Ship from './game-elements/ship';
-import { AsteroidArray } from './game-elements/asteroids';
+import Asteroids from './game-elements/asteroids';
 import Life from './game-elements/life';
-import Score from './game-elements/score';
-import AsteroidDebris from './game-elements/debris';
-import { randomInteger } from "./helpers";
 
 export default class Game {
     constructor(p5, started = false, level = 1) {
@@ -31,7 +28,6 @@ export default class Game {
         this.lifes;
         this.ship;
         this.asteroids = [];
-        this.asteroidDebris = [];
     }
 
     setup(shipImage, heartImage, score) {
@@ -43,8 +39,9 @@ export default class Game {
 
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
-        this.lifes = new Array().fill(3).map(() => new Life(heartImage))
-        this.asteroids = new AsteroidArray(this.p5, this);
+        this.lifes = new Array(3).fill().map(() => new Life(this.p5, heartImage))
+        console.log(this);
+        this.asteroids = new Asteroids(this.p5, this.level);
     }
 
     checkForHits() {
@@ -68,48 +65,21 @@ export default class Game {
         });
     }
 
-    ifExplotionsCreateNewAsteroids() {
-        let explodedAsteroids = this.asteroids.filter(asteroid => asteroid.exploded);
-
-        explodedAsteroids.map(explodedAsteroid => {
-            this.createDebris(explodedAsteroid);
-
-            let { size, position } = { ...explodedAsteroid };
-
-            if (size === 'X') {
-                this.asteroids = this.asteroids.concat([
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
-                    new Asteroid('M', { x: position.x, y: position.y }, this.initialAsteroidVelocity(6)),
-                ]);
-            } else if (size === 'M') {
-                this.asteroids = this.asteroids.concat([
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(8)),
-                    new Asteroid('S', { x: position.x, y: position.y }, this.initialAsteroidVelocity(8)),
-                ]);
-            }
-        });
+    checkIfExplodedAsteroids() {
+        let explodedAsteroids = this.asteroids.array.filter(asteroid => asteroid.exploded);
+        this.asteroids.handleExplodedAsteroids(explodedAsteroids);
+        this.asteroids.cleanExplodedAsteroids();
     }
 
-    createDebris(explodedAsteroid) {
-        const totalAmountOfDebris = this.randomNumOfDebris(explodedAsteroid.radius);
-        for (let i = 0; i < totalAmountOfDebris; i++) {
-            this.asteroidDebris.push(new AsteroidDebris(totalAmountOfDebris, explodedAsteroid));
+    checkIfLevelCompleted() {
+        if (this.asteroids.array.length === 0) {
+            this.levelCompleted = true;
         }
-    }
-
-    randomNumOfDebris(radius) {
-        return Math.floor(randomInteger(1, 3) * Math.sqrt(radius));
-    };
-
-    cleanExplodedAsteroids() {
-        this.asteroids = this.asteroids.filter(asteroid => !asteroid.exploded)
-        if (this.asteroids.length === 0) {
-            this.lvlCompleted = true;
-        }
+        return false;
     }
 
     checkIfCollisions() {
-        this.asteroids.forEach(asteroid => {
+        this.asteroids.array.forEach(asteroid => {
             const { x, y } = { ...asteroid.position }
             const distance = this.p5.dist(x, y, this.ship.position.x - 5, this.ship.position.y);
 
@@ -119,7 +89,7 @@ export default class Game {
                 } else {
                     this.lifes.pop();
                 }
-                this.ship.explosion();
+                this.ship.handleExplosion();
             }
         });
     }
@@ -129,19 +99,14 @@ export default class Game {
         // CHECK STATES   
         this.checkIfCollisions();
         this.checkForHits();
-        this.ifExplotionsCreateNewAsteroids();
-        this.cleanExplodedAsteroids();
+        this.checkIfExplodedAsteroids();
+        this.levelCompleted = this.checkIfLevelCompleted();
 
         // RENDER ELEMENTS
-        this.asteroidDebris.forEach(debris => debris.draw());
-        this.asteroids.forEach(asteroid => asteroid.draw());
-        this.ship.shots.forEach(shot => shot.draw());
+        this.asteroids.draw();
         this.ship.draw();
-        this.lifes.forEach((life, index) => life.draw(index + 1));
+        this.lifes.forEach((life, i) => life.draw(i + 1));
         this.score.draw();
-
-        // CLEAN-UP
-        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
     }
 
     draw() {

@@ -1,7 +1,9 @@
-import { drawPolygon, randomInteger } from '../game/helpers/helpers'
+import { drawPolygon, randomInteger } from '../helpers';
 
 export default class AsteroidDebris {
     constructor(amountOfDebris, explodedAsteroid) {
+        this.p5 = p5;
+
         this.radius = explodedAsteroid.radius / (Math.random() * amountOfDebris);
         // this.radius = randomInteger(3, 5) * explodedAsteroid.radius / (amountOfDebris);
         this.color = this.getInitialColor();
@@ -65,20 +67,17 @@ export default class AsteroidDebris {
     calcColor() {
         if (this.color.fill.A > 0) {
             this.color.fill.A -= 2;
-        }
+        } else this.faded = true;
 
         if (this.color.stroke.A > 0) {
             this.color.stroke.A -= 2;
-        }
+        } else this.faded = true;
     }
 
-    checkIfFaded() {
-        if (this.time > 1) this.faded = true;
-        if (this.faded === true) console.log(this.faded);
 
-    }
+    draw() {
+        const p5 = this.p5;
 
-    draw(p5) {
         p5.push();
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);

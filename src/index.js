@@ -11,7 +11,8 @@ import { LevelUpScreen } from './game/game-state/startMenuScreen';
 // GAME COMPONENTS
 import Background from './game/game-elements/background';
 import Game from './game/game';
-import { spaceOrEnterPressed, findOutHeight, findOutWidth } from './game/helpers';
+import Score from './game/game-elements/score';
+import { findOutHeight, findOutWidth } from './game/helpers';
 
 // global variables
 let background;
@@ -22,9 +23,9 @@ let score;
 
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
-    const resetSketch = (score, started, level) => {
+    const resetSketch = (oldScore, started, level) => {
         game = new Game(p5, started, level);
-        score = score || new Score(p5);
+        score = oldScore || new Score(p5);
         game.setup(ship, heart, score);
     }
 
@@ -45,7 +46,14 @@ export const Canvas = new p5((p5) => {
         game.draw();
 
         // handling STATE CHANGES
-        if (game.gameover && spaceOrEnterPressed(p5)) resetSketch(p5, game.score);
+        if (game.gameover) {
+            p5.keyPressed = () => {
+                console.log("keyPressed detected")
+                if (p5.keyCode === 32 || p5.keyCode === 13) {
+                    resetSketch(p5, game.score);
+                }
+            }
+        };
 
         if (game.levelCompleted) {
             const newGame = new Game(p5, game.level + 1, game.score.value)

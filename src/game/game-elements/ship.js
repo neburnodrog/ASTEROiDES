@@ -1,5 +1,5 @@
 import Shot from "./shot";
-import { randomInteger, spaceOrEnterPressed } from '../helpers';
+import { randomInteger } from '../helpers';
 
 const PI = Math.PI;
 
@@ -28,7 +28,7 @@ export default class Ship {
     rotateShip() {
         if (this.p5.keyIsDown(68) || this.p5.keyIsDown(39)) {
             this.angleOfShip += PI / 40;
-        } else if (p5.keyIsDown(65) || p5.keyIsDown(37)) {
+        } else if (this.p5.keyIsDown(65) || this.p5.keyIsDown(37)) {
             this.angleOfShip -= PI / 40;
         }
 
@@ -52,13 +52,16 @@ export default class Ship {
     }
 
     shoot() {
-        if (spaceOrEnterPressed(this.p5)) {
-            this.shots.push(new Shot(this.position.x, this.position.y, this.angleOfShip));
+        const { p5 } = { ...this }
+        p5.keyPressed = () => {
+            if (p5.keyCode === 32 || p5.keyCode === 13) {
+                this.shots.push(new Shot(p5, this.position.x, this.position.y, this.angleOfShip));
+            }
         }
     }
 
-    /** EVENTS => handled in game.js */
-    explosion() {
+    /** EVENTS => triggered in game.js */
+    handleExplosion() {
         console.log("explosion")
         // not implemented yet
         // const randomDebris = randomInteger(5, 10);
@@ -69,7 +72,7 @@ export default class Ship {
         let { x, y } = { ...this.velocity };
 
         // The absolute velocity is the hypotenuse of the x & y components (Pythagorean theorem)
-        absoluteVelocity = Math.sqrt(y ** 2 + x ** 2);
+        const absoluteVelocity = Math.sqrt(y ** 2 + x ** 2);
 
         if (absoluteVelocity < 10) {
             x += this.acceleration * Math.cos(this.angleOfShip);
@@ -129,6 +132,7 @@ export default class Ship {
         this.filterOldShots();
 
         // RENDERING
+        this.shots.forEach(shot => shot.draw());
         p5.push()
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.angleOfShip);

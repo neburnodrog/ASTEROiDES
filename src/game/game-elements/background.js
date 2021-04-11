@@ -1,6 +1,6 @@
-import Stars from 'stars';
+import Stars from './stars';
 
-export class Background {
+export default class Background {
     constructor(p5) {
         this.p5 = p5;
 
@@ -10,7 +10,7 @@ export class Background {
 
     draw() {
         //first and only clear()
-        this.clear();
+        this.p5.clear();
 
         //drawing background
         this.p5.background(...this.colorRGB);
