@@ -1,20 +1,18 @@
 import { drawPolygon, randomInteger } from '../helpers';
 
 export default class AsteroidDebris {
-    constructor(p5, amountOfDebris, explodedAsteroid) {
+    constructor(p5, amountOfDebris, asteroid) {
         this.p5 = p5;
 
-        this.radius = explodedAsteroid.radius / (Math.random() * amountOfDebris);
-        // this.radius = randomInteger(3, 5) * explodedAsteroid.radius / (amountOfDebris);
+        this.radius = asteroid.radius / (Math.random() * amountOfDebris);
+        // this.radius = randomInteger(3, 5) * asteroid.radius / (amountOfDebris);
         this.color = this.getInitialColor();
         this.sides = randomInteger(5, 14);
-        this.position = { ...explodedAsteroid.position };
+        this.position = { ...asteroid.position };
         this.direction = Math.random() * 2 * Math.PI;
-        this.rotation = { angle: 0, velocity: Math.random() / 50 }
+        this.rotation = { angle: 0, velocity: Math.random() / 40 }
         this.velocity = this.calcInitialVelocityVectors();
-        this.time;
-        this.faded = false;
-        setInterval(() => this.time++, 1000);
+        // this.faded = false;
     }
 
     getInitialColor() {
@@ -71,7 +69,7 @@ export default class AsteroidDebris {
 
         if (this.color.stroke.A > 0) {
             this.color.stroke.A -= 2;
-        } else this.faded = true;
+        } //else this.faded = true;
     }
 
 

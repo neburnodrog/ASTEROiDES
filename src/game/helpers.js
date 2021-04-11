@@ -22,6 +22,12 @@ export function calcVelocityComponents(direction, speed) {
     }
 }
 
+export function calcVectorValue(x, y) {
+    // The absolute value of the vector is the hypotenuse of the x & y components (Pythagorean theorem)
+    return Math.sqrt(y ** 2 + x ** 2);
+}
+
+
 export function findOutWidth() {
     return window.innerWidth && document.documentElement.clientWidth ?
         Math.min(window.innerWidth, document.documentElement.clientWidth)

@@ -35,12 +35,11 @@ export default class Game {
         this.gameOverScreen = new GameOverScreen(this.p5, this);
         this.startMenuScreen = new StartMenuScreen(this.p5, this);
         this.levelUpScreen = new LevelUpScreen(this.p5, this);
-        this.score = score
+        this.score = score;
 
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
         this.lifes = new Array(3).fill().map(() => new Life(this.p5, heartImage))
-        console.log(this);
         this.asteroids = new Asteroids(this.p5, this.level);
     }
 

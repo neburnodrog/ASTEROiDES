@@ -29,18 +29,20 @@ export default class Asteroids {
         return { x: x, y: y, }
     }
 
-    addAsteroids(howMany, size, position) {
-        for (let i = 0; i < howMany; i++) this.array.push(new Asteroid(this.p5, size, position));
-    }
-
     handleExplodedAsteroids(explodedAsteroids) {
-        explodedAsteroids.map(asteroid => {
+        explodedAsteroids.forEach(asteroid => {
             this.createDebris(asteroid);
 
             let { size, position } = { ...asteroid };
             if (size === 'X') this.addAsteroids(2, 'M', { ...position })
             else if (size === 'M') this.addAsteroids(2, 'S', { ...position });
         });
+    }
+
+    addAsteroids(howMany, size, position) {
+        this.array = this.array
+            .concat(new Array(howMany).fill()
+                .map(() => new Asteroid(this.p5, size, { ...position })))
     }
 
     cleanExplodedAsteroids() {
@@ -61,7 +63,7 @@ export default class Asteroids {
     draw() {
         this.array.forEach(asteroid => asteroid.draw());
         this.asteroidDebris.forEach(debris => debris.draw());
-        this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
+        // this.asteroidDebris = this.asteroidDebris.filter(debris => debris.faded === false);
     }
 }
 
@@ -73,23 +75,24 @@ class Asteroid {
         this.size = size;
         this.position = position;
 
-        this.asteroidVelocityMap = { X: 1, M: 3, S: 7 }
+        this.asteroidVelocityMap = { X: 2, M: 5, S: 7 }
         this.velocity = this.initialVelocity();
-
-
-        this.sides = randomInteger(7, 12);
+        this.sides = randomInteger(7, 13);
         this.radius = this.initialRadius(size);
         this.rotation = this.initialRotation();
 
         this.strokes = { X: 8, M: 6, S: 4 }
-        // this.color = {R: 255, G: 255, B: 255} BUT RANDOM
+        this.color = {
+            fill: { R: randomInteger(119, 166), G: randomInteger(67, 94), B: 5 },
+            stroke: { R: randomInteger(174, 200), G: randomInteger(110, 160), B: randomInteger(40, 80) },
+        }
         this.exploded = false;
     }
 
     initialVelocity() {
         return {
-            x: Math.random() * this.asteroidVelocityMap[this.size],
-            y: Math.random() * this.asteroidVelocityMap[this.size],
+            x: (Math.random() - 0.5) * this.asteroidVelocityMap[this.size],
+            y: (Math.random() - 0.5) * this.asteroidVelocityMap[this.size],
         }
     }
 
@@ -100,7 +103,7 @@ class Asteroid {
     }
 
     initialRotation() {
-        return { angle: 0, velocity: Math.random() / 50 }
+        return { angle: 0, velocity: (Math.random() - 0.5) * this.asteroidVelocityMap[this.size] / 50 }
     }
 
     // CALCULATIONS
@@ -133,8 +136,10 @@ class Asteroid {
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
         p5.strokeWeight(this.strokes[this.size]);
-        p5.stroke("#F29F38");
-        p5.fill("#A65E05")
+        p5.stroke(...Object.values(this.color.stroke));
+        p5.fill(...Object.values(this.color.fill))
+        // p5.stroke("#F29F38");
+        // p5.fill("#A65E05")
         drawPolygon(p5, 0, 0, this.radius, this.sides);
 
         p5.pop();

@@ -1,5 +1,5 @@
 import Shot from "./shot";
-import { randomInteger } from '../helpers';
+import { randomInteger, calcVectorValue } from '../helpers';
 
 const PI = Math.PI;
 
@@ -27,9 +27,9 @@ export default class Ship {
     /** USER ACTION METHODS */
     rotateShip() {
         if (this.p5.keyIsDown(68) || this.p5.keyIsDown(39)) {
-            this.angleOfShip += PI / 40;
+            this.angleOfShip += PI / 50;
         } else if (this.p5.keyIsDown(65) || this.p5.keyIsDown(37)) {
-            this.angleOfShip -= PI / 40;
+            this.angleOfShip -= PI / 50;
         }
 
         if (this.angleOfShip > 2 * PI) this.angleOfShip % (2 * PI);
@@ -38,16 +38,16 @@ export default class Ship {
 
     accelerate() {
         if (this.p5.keyIsDown(87) || this.p5.keyIsDown(38)) {
-            this.acceleration += .009;
+            this.acceleration += .007;
         } else {
             this.acceleration = 0;
         }
     }
 
-    reverseEngines() {
+    brakes() {
         if (this.p5.keyIsDown(83) || this.p5.keyIsDown(40)) {
-            this.velocity.x -= .2 * Math.cos(this.angleOfShip);
-            this.velocity.y -= .2 * Math.sin(this.angleOfShip);
+            this.velocity.x -= .02 * Math.cos(this.angleOfShip);
+            this.velocity.y -= .02 * Math.sin(this.angleOfShip);
         }
     }
 
@@ -71,8 +71,7 @@ export default class Ship {
     calcVelocity() {
         let { x, y } = { ...this.velocity };
 
-        // The absolute velocity is the hypotenuse of the x & y components (Pythagorean theorem)
-        const absoluteVelocity = Math.sqrt(y ** 2 + x ** 2);
+        const absoluteVelocity = calcVectorValue(x, y);
 
         if (absoluteVelocity < 10) {
             x += this.acceleration * Math.cos(this.angleOfShip);
@@ -120,7 +119,7 @@ export default class Ship {
         // USER ACTIONS
         this.rotateShip(p5);
         this.accelerate(p5);
-        this.reverseEngines(p5)
+        this.brakes(p5)
         this.shoot(p5);
 
         // CALCULATIONS
