@@ -6,17 +6,15 @@ import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
 
 // GAME STATE COMPONENTS
-import { StartMenuScreen, LevelUpScreen } from './game/game-state/startMenuScreen';
-import GameOverScreen from './game/game-state/gameOverScreen';
+import { LevelUpScreen } from './game/game-state/startMenuScreen';
 
 // GAME COMPONENTS
 import Background from './game/game-elements/background';
 import Game from './game/game';
-import { spaceOrEnterPressed } from './game/helpers';
+import { spaceOrEnterPressed, findOutHeight, findOutWidth } from './game/helpers';
 
 // global variables
 let background;
-let startmenu;
 let game;
 let ship;
 let heart;
@@ -36,7 +34,7 @@ export const Canvas = new p5((p5) => {
     }
 
     p5.setup = () => {
-        p5.createCanvas(window.innerWidth, window.innerHeight);
+        p5.createCanvas(findOutWidth(), findOutHeight());
         p5.imageMode(p5.CENTER);
         background = new Background(p5);
         resetSketch();
@@ -54,12 +52,12 @@ export const Canvas = new p5((p5) => {
             newGame.setup(p5, ship, heart);
             const levelScreen = new LevelUpScreen(p5, newGame.level);
             levelScreen.draw(p5);
-
-            if (levelScreen.started) {
-                game = newGame;
-            }
         }
     }
+
+    p5.windowResized = () => {
+        p5.resizeCanvas(findOutWidth(), findOutHeight());
+    };
 
 });
 

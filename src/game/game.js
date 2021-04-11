@@ -151,7 +151,6 @@ export default class Game {
         else if (this.levelCompleted) {
             this.level++;
             this.levelUpScreen.draw()
-        } 
-                    : this.playGame();
+        } else this.playGame();
     }
 }

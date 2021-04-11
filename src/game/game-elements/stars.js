@@ -1,5 +1,5 @@
 
-export class Stars {
+export default class Stars {
     constructor(p5) {
         this.p5 = p5;
         this.stars = new Array(1000).fill().map(() => new Star(p5));

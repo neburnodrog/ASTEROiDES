@@ -1,6 +1,6 @@
-import { Stars } from 'stars';
+import Stars from 'stars';
 
-export default class Background {
+export class Background {
     constructor(p5) {
         this.p5 = p5;
 
