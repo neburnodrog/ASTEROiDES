@@ -21,7 +21,7 @@ export default class Asteroids {
         let x = width * Math.random();
         let y = height * Math.random();
 
-        while (this.p5.dist(x, y, width / 2, height / 2) < 200) {
+        while (this.p5.dist(x, y, width / 2, height / 2) < 300) {
             x = width * Math.random();
             y = height * Math.random();
         }
