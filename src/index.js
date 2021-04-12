@@ -65,6 +65,7 @@ export const Canvas = new p5((p5) => {
 
     p5.windowResized = () => {
         p5.resizeCanvas(findOutWidth(), findOutHeight());
+        background = new Background(p5);
     };
 
 });
