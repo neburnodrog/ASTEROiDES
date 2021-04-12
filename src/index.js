@@ -70,24 +70,32 @@ export const Canvas = new p5((p5) => {
 
 });
 
-const canvas = document.querySelector('canvas');
 
-window.onkeydown = function (e) {
-    if (e.keyCode == 32 && e.target == canvas) e.preventDefault();
+window.top.document.onkeydown = function (evt) {
+    evt = evt || window.event;
+    var keyCode = evt.keyCode;
+    if (keyCode >= 37 && keyCode <= 40 || keyCode === 32) {
+        return false;
+    }
 };
+// const canvas = document.querySelector('canvas');
 
-window.onkeydown = function (e) {
-    if (e.keyCode == 37 && e.target == canvas) e.preventDefault();
-};
+// window.onkeydown = function (e) {
+//     if (e.keyCode == 32 && e.target == canvas) e.preventDefault();
+// };
 
-window.onkeydown = function (e) {
-    if (e.keyCode == 38 && e.target == canvas) e.preventDefault();
-};
+// window.onkeydown = function (e) {
+//     if (e.keyCode == 37 && e.target == canvas) e.preventDefault();
+// };
 
-window.onkeydown = function (e) {
-    if (e.keyCode == 39 && e.target == canvas) e.preventDefault();
-};
+// window.onkeydown = function (e) {
+//     if (e.keyCode == 38 && e.target == canvas) e.preventDefault();
+// };
 
-window.onkeydown = function (e) {
-    if (e.keyCode == 40 && e.target == canvas) e.preventDefault();
-};
+// window.onkeydown = function (e) {
+//     if (e.keyCode == 39 && e.target == canvas) e.preventDefault();
+// };
+
+// window.onkeydown = function (e) {
+//     if (e.keyCode == 40 && e.target == canvas) e.preventDefault();
+// };
