@@ -52,7 +52,7 @@ export default class Ship {
     }
 
     shoot() {
-        const { p5 } = { ...this }
+        const { p5 } = this;
         p5.keyPressed = () => {
             if (p5.keyCode === 32 || p5.keyCode === 13) {
                 this.shots.push(new Shot(p5, this.position.x, this.position.y, this.angleOfShip));
@@ -69,7 +69,7 @@ export default class Ship {
 
     /** CALCULATIONS */
     calcVelocity() {
-        let { x, y } = { ...this.velocity };
+        let { x, y } = this.velocity;
 
         const absoluteVelocity = calcVectorValue(x, y);
 
@@ -92,8 +92,8 @@ export default class Ship {
     }
 
     ifOverflowed() {
-        const { width, height } = { ...this.p5 };
-        let { x, y } = { ...this.position };
+        const { width, height } = this.p5;
+        let { x, y } = this.position;
 
         if (x < 0) return { x: x + width, y: y }
         if (x > width) return { x: x % width, y: y }
@@ -114,7 +114,7 @@ export default class Ship {
 
     /** LOOP */
     draw() {
-        const p5 = this.p5;
+        const { p5 } = this;
 
         // USER ACTIONS
         this.rotateShip(p5);
