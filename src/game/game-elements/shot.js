@@ -3,8 +3,9 @@ import { calcVelocityComponents } from '../helpers';
 export default class Shot {
     constructor(p5, x, y, direction) {
         this.p5 = p5;
-        this.position = { x: x, y: y }
-        this.velocity = calcVelocityComponents(direction, 15);
+        this.position = { x, y }
+        this.absoluteSpeed = 13;
+        this.velocity = calcVelocityComponents(direction, this.absoluteSpeed);
         this.hit = false;
     }
 
@@ -15,6 +16,7 @@ export default class Shot {
 
     draw() {
         const p5 = this.p5;
+
         // calculations
         this.calcPosition();
 
