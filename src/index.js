@@ -78,24 +78,3 @@ window.top.document.onkeydown = function (evt) {
         return false;
     }
 };
-// const canvas = document.querySelector('canvas');
-
-// window.onkeydown = function (e) {
-//     if (e.keyCode == 32 && e.target == canvas) e.preventDefault();
-// };
-
-// window.onkeydown = function (e) {
-//     if (e.keyCode == 37 && e.target == canvas) e.preventDefault();
-// };
-
-// window.onkeydown = function (e) {
-//     if (e.keyCode == 38 && e.target == canvas) e.preventDefault();
-// };
-
-// window.onkeydown = function (e) {
-//     if (e.keyCode == 39 && e.target == canvas) e.preventDefault();
-// };
-
-// window.onkeydown = function (e) {
-//     if (e.keyCode == 40 && e.target == canvas) e.preventDefault();
-// };
