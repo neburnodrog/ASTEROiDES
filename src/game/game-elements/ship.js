@@ -120,7 +120,7 @@ export default class Ship {
         this.rotateShip(p5);
         this.accelerate(p5);
         this.brakes(p5)
-        this.shoot(p5);
+
 
         // CALCULATIONS
         this.velocity = this.calcVelocity();
@@ -137,5 +137,7 @@ export default class Ship {
         p5.rotate(this.angleOfShip);
         p5.image(this.image, 5, 0, this.shipLength, this.shipWidth)
         p5.pop();
+
+        this.shoot(p5);
     }
 }
