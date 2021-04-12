@@ -4,9 +4,9 @@ export class StartMenuScreen {
         this.p5 = p5
         this.game = game;
         this.title = { text: 'ASTEROiDES', size: 52, position: { x: 0, y: -200 } }
-        this.level = { text: `LEVEL 1`, position: { x: 0, y: 0 } }
-        this.start = { text: 'PRESS ENTER/SPACE TO START', position: { x: 0, y: 0 } }
-        this.controls = { text: 'Controls: ASWD/ARROWS to  move & ENTER/SPACE to shoot', position: { x: 0, y: 0 } }
+        this.level = { text: `LEVEL `, position: { x: 0, y: 0 } }
+        this.start = { text: 'PRESS ENTER/SPACE TO START', position: { x: 0, y: 100 } }
+        this.controls = { text: 'Controls: ASWD/ARROWS to  move & ENTER/SPACE to shoot', position: { x: 0, y: 200 } }
         this.color = "#AFE4FF";
     }
 
@@ -30,6 +30,12 @@ export class StartMenuScreen {
         p5.text(this.controls.text, this.controls.position.x, this.controls.position.y);
 
         p5.pop();
+
+        p5.keyPressed = () => {
+            if (p5.keyCode === 32 || p5.keyCode === 13) {
+                this.game.started = true;
+            }
+        }
     }
 }
 
@@ -37,5 +43,15 @@ export class LevelUpScreen extends StartMenuScreen {
     constructor(p5, game) {
         super(p5, game);
         this.controls = { text: '', position: { x: 0, y: 0 } }
+    }
+
+    draw() {
+        super.draw();
+
+        p5.keyPressed = () => {
+            if (p5.keyCode === 32 || p5.keyCode === 13) {
+                Canvas.resetSketch(true, this.game.level, this.game.score);
+            }
+        }
     }
 }

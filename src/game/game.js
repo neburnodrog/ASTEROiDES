@@ -8,7 +8,7 @@ import Asteroids from './game-elements/asteroids';
 import Life from './game-elements/life';
 
 export default class Game {
-    constructor(p5, started = false, level = 1) {
+    constructor(p5, started, level) {
         this.p5 = p5;
 
         // STATES
@@ -56,9 +56,9 @@ export default class Game {
                 if (distance < asteroid.radius) {
                     asteroid.exploded = true;
                     shot.hit = true;
-                    if (asteroid.size === 'X') this.score.value += 50;
-                    if (asteroid.size === 'M') this.score.value += 100;
-                    if (asteroid.size === 'S') this.score.value += 200;
+                    if (asteroid.size === 'X') this.score.value += 25;
+                    if (asteroid.size === 'M') this.score.value += 50;
+                    if (asteroid.size === 'S') this.score.value += 75;
                 }
             })
         });
@@ -73,13 +73,13 @@ export default class Game {
     checkIfLevelCompleted() {
         if (this.asteroids.array.length === 0) {
             this.levelCompleted = true;
+            this.level++;
         }
-        return false;
     }
 
     checkIfCollisions() {
         this.asteroids.array.forEach(asteroid => {
-            const { x, y } = { ...asteroid.position }
+            const { x, y } = asteroid.position
             const distance = this.p5.dist(x, y, this.ship.position.x - 5, this.ship.position.y);
 
             if (distance < asteroid.radius + 20) {
@@ -99,7 +99,7 @@ export default class Game {
         this.checkIfCollisions();
         this.checkForHits();
         this.checkIfExplodedAsteroids();
-        this.levelCompleted = this.checkIfLevelCompleted();
+        this.checkIfLevelCompleted();
 
         // RENDER ELEMENTS
         this.asteroids.draw();
@@ -109,11 +109,11 @@ export default class Game {
     }
 
     draw() {
+        this.p5.frameRate(80);
         // GENERAL GAME STATE CHECK
-        if (this.started) this.startMenuScreen.draw();
+        if (this.started === false) this.startMenuScreen.draw();
         else if (this.gameOver) this.gameOverScreen.draw();
         else if (this.levelCompleted) {
-            this.level++;
             this.levelUpScreen.draw()
         } else this.playGame();
     }

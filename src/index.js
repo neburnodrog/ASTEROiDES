@@ -23,7 +23,7 @@ let score;
 
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
-    const resetSketch = (oldScore, started, level) => {
+    const resetSketch = (started, level, oldScore) => {
         game = new Game(p5, started, level);
         score = oldScore || new Score(p5);
         game.setup(ship, heart, score);
@@ -38,29 +38,12 @@ export const Canvas = new p5((p5) => {
         p5.createCanvas(findOutWidth(), findOutHeight());
         p5.imageMode(p5.CENTER);
         background = new Background(p5);
-        resetSketch();
+        resetSketch(false, 1);
     }
 
     p5.draw = () => {
         background.draw();
         game.draw();
-
-        // handling STATE CHANGES
-        if (game.gameover) {
-            p5.keyPressed = () => {
-                console.log("keyPressed detected")
-                if (p5.keyCode === 32 || p5.keyCode === 13) {
-                    resetSketch(p5, game.score);
-                }
-            }
-        };
-
-        if (game.levelCompleted) {
-            const newGame = new Game(p5, game.level + 1, game.score.value)
-            newGame.setup(p5, ship, heart);
-            const levelScreen = new LevelUpScreen(p5, newGame.level);
-            levelScreen.draw(p5);
-        }
     }
 
     p5.windowResized = () => {
