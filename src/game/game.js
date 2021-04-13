@@ -73,7 +73,7 @@ export default class Game {
     checkIfLevelCompleted() {
         if (this.asteroids.array.length === 0) {
             this.levelCompleted = true;
-            this.level++;
+            this.game.level++;
         }
     }
 
@@ -95,6 +95,7 @@ export default class Game {
 
     // DRAW
     playGame() {
+        this.p5.frameRate(60);
         // CHECK STATES   
         this.checkIfCollisions();
         this.checkForHits();
@@ -109,7 +110,6 @@ export default class Game {
     }
 
     draw() {
-        this.p5.frameRate(80);
         // GENERAL GAME STATE CHECK
         if (this.started === false) this.startMenuScreen.draw();
         else if (this.gameOver) this.gameOverScreen.draw();

@@ -1,5 +1,3 @@
-import { Canvas } from '../../index'
-
 export default class GameOverScreen {
     constructor(p5, game) {
         this.p5 = p5;
@@ -26,11 +24,5 @@ export default class GameOverScreen {
         p5.text('PRESS SPACE TO PLAY AGAIN', 0, 200)
 
         p5.pop();
-
-        p5.keyPressed = () => {
-            if (p5.keyCode === 32 || p5.keyCode === 13) {
-                Canvas.resetSketch(false, 1);
-            }
-        }
     }
 }

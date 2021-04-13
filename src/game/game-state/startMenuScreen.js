@@ -1,4 +1,3 @@
-
 export class StartMenuScreen {
     constructor(p5, game) {
         this.p5 = p5
@@ -45,12 +44,23 @@ export class LevelUpScreen extends StartMenuScreen {
         this.controls = { text: '', position: { x: 0, y: 0 } }
     }
 
+    newLevel() {
+        this.game.ship.position = {
+            x: this.p5.width / 2,
+            y: this.p5.height / 2
+        }
+        this.game.asteroids = new Asteroids(this.p5, this.game.level);
+        this.game.levelCompleted = false;
+    }
+
     draw() {
         super.draw();
 
-        p5.keyPressed = () => {
-            if (p5.keyCode === 32 || p5.keyCode === 13) {
-                Canvas.resetSketch(true, this.game.level, this.game.score);
+        this.p5.keyPressed = () => {
+            if (this.p5.keyCode === 32 || this.p5.keyCode === 13) {
+                console.log("game should reset")
+                console.log(this.game)
+                this.newLevel();
             }
         }
     }

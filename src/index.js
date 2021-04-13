@@ -49,6 +49,13 @@ export const Canvas = new p5((p5) => {
     p5.windowResized = () => {
         p5.resizeCanvas(findOutWidth(), findOutHeight());
         background = new Background(p5);
+        if (game.gameOver) {
+            p5.keyPressed = () => {
+                if (p5.keyCode === 32 || p5.keyCode === 13) {
+                    resetSketch(false, 1);
+                }
+            }
+        }
     };
 
 });
