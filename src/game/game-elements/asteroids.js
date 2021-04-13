@@ -16,7 +16,7 @@ export default class Asteroids {
     }
 
     initialPosition() {
-        const { width, height } = { ...this.p5 }
+        const { width, height } = this.p5
 
         let x = width * Math.random();
         let y = height * Math.random();

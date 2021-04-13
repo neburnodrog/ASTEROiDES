@@ -58,8 +58,6 @@ export class LevelUpScreen extends StartMenuScreen {
 
         this.p5.keyPressed = () => {
             if (this.p5.keyCode === 32 || this.p5.keyCode === 13) {
-                console.log("game should reset")
-                console.log(this.game)
                 this.newLevel();
             }
         }
