@@ -4,7 +4,7 @@ export default class Shot {
     constructor(p5, x, y, direction) {
         this.p5 = p5;
         this.position = { x, y }
-        this.absoluteSpeed = 13;
+        this.absoluteSpeed = 15;
         this.velocity = calcVelocityComponents(direction, this.absoluteSpeed);
         this.hit = false;
     }

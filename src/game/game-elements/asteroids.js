@@ -82,10 +82,10 @@ class Asteroid {
         this.rotation = this.initialRotation();
 
         this.strokes = { X: 8, M: 6, S: 4 }
-        this.color = {
-            fill: { R: randomInteger(119, 166), G: randomInteger(67, 94), B: 5 },
-            stroke: { R: randomInteger(174, 200), G: randomInteger(110, 160), B: randomInteger(40, 80) },
-        }
+        // this.color = {
+        //     fill: { R: randomInteger(119, 166), G: randomInteger(67, 94), B: 5 },
+        //     stroke: { R: randomInteger(174, 200), G: randomInteger(110, 160), B: randomInteger(40, 80) },
+        // }
         this.exploded = false;
     }
 
@@ -136,10 +136,10 @@ class Asteroid {
         p5.translate(this.position.x, this.position.y);
         p5.rotate(this.rotation.angle);
         p5.strokeWeight(this.strokes[this.size]);
-        p5.stroke(...Object.values(this.color.stroke));
-        p5.fill(...Object.values(this.color.fill))
-        // p5.stroke("#F29F38");
-        // p5.fill("#A65E05")
+        // p5.stroke(...Object.values(this.color.stroke));
+        // p5.fill(...Object.values(this.color.fill))
+        p5.stroke("#F29F38");
+        p5.fill("#A65E05")
         drawPolygon(p5, 0, 0, this.radius, this.sides);
 
         p5.pop();
