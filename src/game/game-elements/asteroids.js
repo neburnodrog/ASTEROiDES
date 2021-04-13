@@ -75,7 +75,7 @@ class Asteroid {
         this.size = size;
         this.position = position;
 
-        this.asteroidVelocityMap = { X: 2, M: 5, S: 7 }
+        this.asteroidVelocityMap = { X: 4, M: 7, S: 10 }
         this.velocity = this.initialVelocity();
         this.sides = randomInteger(7, 13);
         this.radius = this.initialRadius(size);
