@@ -38,7 +38,7 @@ export default class Ship {
 
     accelerate() {
         if (this.p5.keyIsDown(87) || this.p5.keyIsDown(38)) {
-            this.acceleration += .007;
+            this.acceleration += .009;
         } else {
             this.acceleration = 0;
         }
@@ -55,7 +55,7 @@ export default class Ship {
         const { p5 } = this;
         p5.keyPressed = () => {
             if (p5.keyCode === 32 || p5.keyCode === 13) {
-                this.shots.push(new Shot(p5, this.position.x, this.position.y, this.angleOfShip));
+                this.shots.push(new Shot(p5, this));
             }
         }
     }

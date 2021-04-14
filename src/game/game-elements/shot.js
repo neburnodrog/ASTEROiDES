@@ -1,11 +1,14 @@
-import { calcVelocityComponents } from '../helpers';
+import { calcVelocityComponents, calcVectorValue } from '../helpers';
 
 export default class Shot {
-    constructor(p5, x, y, direction) {
+    constructor(p5, ship) {
         this.p5 = p5;
-        this.position = { x, y }
+        this.position = { x: ship.position.x, y: ship.position.y }
         this.absoluteSpeed = 15;
-        this.velocity = calcVelocityComponents(direction, this.absoluteSpeed);
+        this.velocity = calcVelocityComponents(
+            ship.angleOfShip,
+            this.absoluteSpeed + calcVectorValue(ship.velocity.x, ship.velocity.y)
+        );
         this.hit = false;
     }
 
