@@ -10,7 +10,7 @@ export default class Asteroids {
     }
 
     createInitialAsteroids() {
-        return new Array(this.level/* * 3 + 2*/)
+        return new Array(this.level * 2)
             .fill()
             .map(() => new Asteroid(this.p5, 'X', this.initialPosition()));
     }
@@ -30,13 +30,13 @@ export default class Asteroids {
     }
 
     handleExplodedAsteroids(explodedAsteroids) {
-        // explodedAsteroids.forEach(asteroid => {
-        //     this.createDebris(asteroid);
+        explodedAsteroids.forEach(asteroid => {
+            this.createDebris(asteroid);
 
-        //     let { size, position } = { ...asteroid };
-        //     if (size === 'X') this.addAsteroids(2, 'M', { ...position })
-        //     else if (size === 'M') this.addAsteroids(2, 'S', { ...position });
-        // });
+            let { size, position } = { ...asteroid };
+            if (size === 'X') this.addAsteroids(2, 'M', { ...position })
+            else if (size === 'M') this.addAsteroids(2, 'S', { ...position });
+        });
     }
 
     addAsteroids(howMany, size, position) {

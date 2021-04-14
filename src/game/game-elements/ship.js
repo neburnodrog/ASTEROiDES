@@ -1,4 +1,5 @@
 import Shot from "./shot";
+import ShipDebris from './shipDebris'
 import { randomInteger, calcVectorValue } from '../helpers';
 
 const PI = Math.PI;
@@ -62,9 +63,14 @@ export default class Ship {
 
     /** EVENTS => triggered in game.js */
     handleExplosion() {
-        console.log("explosion")
-        // not implemented yet
-        // const randomDebris = randomInteger(5, 10);
+        const randomDebris = randomInteger(10, 15);
+        this.shipDebris = new Array(randomDebris)
+            .fill()
+            .map(() => new ShipDebris(this.p5, this));
+
+        this.position = { x: null, y: null }
+        // const that = this
+        // setTimeout((that) => that.position = { x: p5.width / 2, y: p5.height / 2, })
     }
 
     /** CALCULATIONS */

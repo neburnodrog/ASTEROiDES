@@ -16,7 +16,7 @@ export class StartMenuScreen {
 
         p5.push()
 
-        p5.frameRate(20);
+        p5.frameRate(10);
 
         p5.fill(this.color);
         p5.textAlign(p5.CENTER, p5.CENTER)
