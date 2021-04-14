@@ -49,6 +49,11 @@ export const Canvas = new p5((p5) => {
                 }
             }
         }
+
+        let fps = p5.frameRate();
+        p5.fill(255);
+        p5.stroke(0);
+        p5.text("FPS: " + fps.toFixed(2), 10, p5.height - 10);
     }
 
     p5.windowResized = () => {
