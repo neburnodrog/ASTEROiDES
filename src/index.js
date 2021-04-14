@@ -1,6 +1,9 @@
 import p5 from 'p5';
 import './css/index.css';
 
+// FONTS
+import font from './font/SpaceQuest-yOY3.ttf'
+
 // IMAGES
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
@@ -17,6 +20,7 @@ let game;
 let ship;
 let heart;
 let score;
+let spaceQuest;
 
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
@@ -29,6 +33,7 @@ export const Canvas = new p5((p5) => {
     p5.preload = () => {
         ship = p5.loadImage(shipImage);
         heart = p5.loadImage(heartImage);
+        spaceQuest = p5.loadFont(font);
     }
 
     p5.setup = () => {
@@ -36,6 +41,7 @@ export const Canvas = new p5((p5) => {
         p5.imageMode(p5.CENTER);
         background = new Background(p5);
         resetSketch(false, 1);
+        p5.textFont(spaceQuest);
     }
 
     p5.draw = () => {
