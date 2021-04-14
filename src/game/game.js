@@ -73,7 +73,7 @@ export default class Game {
     checkIfLevelCompleted() {
         if (this.asteroids.array.length === 0) {
             this.levelCompleted = true;
-            this.game.level++;
+            this.level++;
         }
     }
 

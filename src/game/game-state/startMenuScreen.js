@@ -1,3 +1,5 @@
+import Asteroids from '../game-elements/asteroids'
+
 export class StartMenuScreen {
     constructor(p5, game) {
         this.p5 = p5

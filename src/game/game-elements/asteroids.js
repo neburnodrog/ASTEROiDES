@@ -10,7 +10,7 @@ export default class Asteroids {
     }
 
     createInitialAsteroids() {
-        return new Array(this.level * 3 + 2)
+        return new Array(this.level/* * 3 + 2*/)
             .fill()
             .map(() => new Asteroid(this.p5, 'X', this.initialPosition()));
     }
