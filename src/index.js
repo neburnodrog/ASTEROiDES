@@ -7,6 +7,7 @@ import font from './font/SpaceQuest-yOY3.ttf'
 // IMAGES
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
+import './images/favicon.ico';
 
 // GAME COMPONENTS
 import Background from './game/game-elements/background';

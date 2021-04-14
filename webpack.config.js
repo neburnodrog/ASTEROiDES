@@ -15,6 +15,7 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             template: 'index.html',
+            favicon: 'src/images/favicon.ico'
         }),
 
         // Add your plugins here
@@ -31,7 +32,7 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(eot|svg|ttf|woff|woff2|png|jpg|jpeg|gif)$/,
+                test: /\.(eot|svg|ttf|woff|woff2|png|jpg|jpeg|gif|ico)$/,
                 type: 'asset',
             },
 
