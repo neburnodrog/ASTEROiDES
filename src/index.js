@@ -5,9 +5,6 @@ import './css/index.css';
 import shipImage from './images/ship.png';
 import heartImage from './images/heart.png';
 
-// GAME STATE COMPONENTS
-import { LevelUpScreen } from './game/game-state/startMenuScreen';
-
 // GAME COMPONENTS
 import Background from './game/game-elements/background';
 import Game from './game/game';
@@ -44,6 +41,7 @@ export const Canvas = new p5((p5) => {
     p5.draw = () => {
         background.draw();
         game.draw();
+
         if (game.gameOver) {
             p5.keyPressed = () => {
                 if (p5.keyCode === 32 || p5.keyCode === 13) {
