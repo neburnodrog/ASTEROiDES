@@ -12,7 +12,7 @@ export default class Score {
         p5.textSize(24);
         p5.fill("#00ca8d");
         p5.textAlign(p5.CENTER, p5.CENTER)
-        p5.text(this.value, 100, 20);
+        p5.text(this.value, 100, 12);
         p5.pop()
     }
 }
