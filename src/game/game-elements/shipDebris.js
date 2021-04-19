@@ -1,5 +1,4 @@
-import { randomInteger } from "../helpers";
-
+import { randomInteger, drawPolygon } from "../helpers";
 
 export default class ShipDebris {
     constructor(p5, ship) {
@@ -10,11 +9,18 @@ export default class ShipDebris {
             stroke: '#ff0062',
         };
         this.sides = 3;
-        this.radius = 3;
+        this.radius = 5;
+        this.faded = false;
+        setTimeout(() => this.faded = true, 1000 * Math.random())
+    }
+
+    calcColor() {
+        // to implement
     }
 
     draw() {
         const p5 = this.p5;
+        this.calcColor();
 
         p5.push();
 

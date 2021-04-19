@@ -12,7 +12,6 @@ import './images/favicon.ico';
 // GAME COMPONENTS
 import Background from './game/game-elements/background';
 import Game from './game/game';
-import Score from './game/game-elements/score';
 import { findOutHeight, findOutWidth } from './game/helpers';
 
 // global variables
@@ -25,10 +24,9 @@ let spaceQuest;
 
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
-    const resetSketch = (started, level, oldScore) => {
+    const resetSketch = (started, level, oldScore, oldLifes) => {
         game = new Game(p5, started, level);
-        score = oldScore || new Score(p5);
-        game.setup(ship, heart, score);
+        game.setup(ship, heart, oldScore, oldLifes);
     }
 
     p5.preload = () => {
@@ -55,6 +53,10 @@ export const Canvas = new p5((p5) => {
                     resetSketch(false, 1);
                 }
             }
+        }
+
+        if (game.restartLevel) {
+            resetSketch(true, game.level, game.score, game.lifes)
         }
 
         let fps = p5.frameRate();

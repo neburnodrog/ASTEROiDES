@@ -4,6 +4,7 @@ import { StartMenuScreen, LevelUpScreen } from './game-state/startMenuScreen';
 
 /** GAME ELEMENTS */
 import Ship from './game-elements/ship';
+import Score from './game-elements/score';
 import Asteroids from './game-elements/asteroids';
 import Life from './game-elements/life';
 
@@ -16,6 +17,7 @@ export default class Game {
         this.paused = false;
         this.gameOver = false;
         this.levelCompleted = false;
+        this.restartLevel = false;
         this.level = level;
         this.score;
 
@@ -30,16 +32,16 @@ export default class Game {
         this.asteroids = [];
     }
 
-    setup(shipImage, heartImage, score) {
+    setup(shipImage, heartImage, score, lifes) {
         /** INITIALIZING STATE COMPONENTS */
         this.gameOverScreen = new GameOverScreen(this.p5, this);
         this.startMenuScreen = new StartMenuScreen(this.p5, this);
         this.levelUpScreen = new LevelUpScreen(this.p5, this);
-        this.score = score;
+        this.score = score || new Score(this.p5);;
 
         /* INITIALIZING GAME ELEMENTS */
         this.ship = new Ship(this.p5, shipImage);
-        this.lifes = new Array(3).fill().map(() => new Life(this.p5, heartImage))
+        this.lifes = lifes || new Array(3).fill().map(() => new Life(this.p5, heartImage))
         this.asteroids = new Asteroids(this.p5, this.level);
     }
 
@@ -87,6 +89,9 @@ export default class Game {
                     this.gameOver = true;
                 } else {
                     this.lifes.pop();
+                    setTimeout(() => {
+                        this.restartLevel = true;
+                    }, 3000);
                 }
                 this.ship.handleExplosion();
             }
@@ -104,7 +109,11 @@ export default class Game {
 
         // RENDER ELEMENTS
         this.asteroids.draw();
-        this.ship.draw();
+        if (this.ship.exploded) {
+
+        } else {
+            this.ship.draw();
+        }
         this.lifes.forEach((life, i) => life.draw(i + 1));
         this.score.draw();
     }
@@ -113,8 +122,7 @@ export default class Game {
         // GENERAL GAME STATE CHECK
         if (this.started === false) this.startMenuScreen.draw();
         else if (this.gameOver) this.gameOverScreen.draw();
-        else if (this.levelCompleted) {
-            this.levelUpScreen.draw()
-        } else this.playGame();
+        else if (this.levelCompleted) this.levelUpScreen.draw()
+        else this.playGame();
     }
 }

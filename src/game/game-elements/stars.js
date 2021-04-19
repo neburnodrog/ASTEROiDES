@@ -2,7 +2,7 @@
 export default class Stars {
     constructor(p5) {
         this.p5 = p5;
-        this.stars = new Array(1000).fill().map(() => new Star(p5));
+        this.stars = new Array(500).fill().map(() => new Star(p5));
     }
 
     draw() {
@@ -24,7 +24,7 @@ class Star {
 
         p5.push();
         p5.stroke('#AFE4FF');
-        p5.strokeWeight(2);
+        p5.strokeWeight(3);
         p5.point(this.position.x, this.position.y);
         p5.pop();
     }

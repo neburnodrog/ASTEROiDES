@@ -7,7 +7,7 @@ export class StartMenuScreen {
         this.title = { text: 'ASTEROiDES', size: 52, position: { x: 0, y: -200 } }
         this.level = { text: `LEVEL `, position: { x: 0, y: 0 } }
         this.start = { text: 'PRESS ENTER/SPACE TO START', position: { x: 0, y: 100 } }
-        this.controls = { text: 'Controls: ASWD/ARROWS to  move & ENTER/SPACE to shoot', position: { x: 0, y: 200 } }
+        this.controls = { text: 'Controls: ASWD/ARROWS to move & ENTER/SPACE to shoot', position: { x: 0, y: 200 } }
         this.color = "#AFE4FF";
     }
 

@@ -1,5 +1,6 @@
 import Shot from "./shot";
-import ShipDebris from './shipDebris'
+import ShipDebris from './shipDebris';
+import ShipTrace from './shipTrace';
 import { randomInteger, calcVectorValue } from '../helpers';
 
 const PI = Math.PI;
@@ -15,22 +16,26 @@ export default class Ship {
 
         // DYNAMIC PROPERTIES
         this.acceleration = 0; // only when arrow_up is pressed
-        this.resistance = .01;
+        this.resistance = .02;
         this.velocity = { x: 0, y: 0, }
         this.position = { x: p5.width / 2, y: p5.height / 2, }
         this.angleOfShip = 0; // expressed in radians
 
         // DEPENDANT ELEMENTS
         this.shots = [];
+        this.traces = [];
         this.shipDebris = [];
+
+        // STATE
+        this.exploded = false;
     }
 
     /** USER ACTION METHODS */
     rotateShip() {
         if (this.p5.keyIsDown(68) || this.p5.keyIsDown(39)) {
-            this.angleOfShip += PI / 50;
+            this.angleOfShip += PI / 40;
         } else if (this.p5.keyIsDown(65) || this.p5.keyIsDown(37)) {
-            this.angleOfShip -= PI / 50;
+            this.angleOfShip -= PI / 40;
         }
 
         if (this.angleOfShip > 2 * PI) this.angleOfShip % (2 * PI);
@@ -39,7 +44,8 @@ export default class Ship {
 
     accelerate() {
         if (this.p5.keyIsDown(87) || this.p5.keyIsDown(38)) {
-            this.acceleration += .009;
+            this.acceleration = 1;
+            this.createTraces();
         } else {
             this.acceleration = 0;
         }
@@ -47,8 +53,8 @@ export default class Ship {
 
     brakes() {
         if (this.p5.keyIsDown(83) || this.p5.keyIsDown(40)) {
-            this.velocity.x -= .02 * Math.cos(this.angleOfShip);
-            this.velocity.y -= .02 * Math.sin(this.angleOfShip);
+            this.velocity.x -= .04 * Math.cos(this.angleOfShip);
+            this.velocity.y -= .04 * Math.sin(this.angleOfShip);
         }
     }
 
@@ -61,25 +67,13 @@ export default class Ship {
         }
     }
 
-    /** EVENTS => triggered in game.js */
-    handleExplosion() {
-        const randomDebris = randomInteger(10, 15);
-        this.shipDebris = new Array(randomDebris)
-            .fill()
-            .map(() => new ShipDebris(this.p5, this));
-
-        this.position = { x: null, y: null }
-        // const that = this
-        // setTimeout((that) => that.position = { x: p5.width / 2, y: p5.height / 2, })
-    }
-
     /** CALCULATIONS */
     calcVelocity() {
         let { x, y } = this.velocity;
 
         const absoluteVelocity = calcVectorValue(x, y);
 
-        if (absoluteVelocity < 10) {
+        if (absoluteVelocity < 5) {
             x += this.acceleration * Math.cos(this.angleOfShip);
             y += this.acceleration * Math.sin(this.angleOfShip);
         }
@@ -91,10 +85,11 @@ export default class Ship {
     }
 
     calcPosition() {
+        const { x, y } = this.position;
         return {
-            x: this.position.x + this.velocity.x,
-            y: this.position.y + this.velocity.y,
-        };
+            x: x + this.velocity.x,
+            y: y + this.velocity.y,
+        }
     }
 
     ifOverflowed() {
@@ -109,6 +104,20 @@ export default class Ship {
         return { x: x, y: y };
     }
 
+    /** EVENTS => triggered in game.js */
+    handleExplosion() {
+        this.exploded = true;
+        this.position = { x: null, y: null }
+        const randomDebris = randomInteger(30, 40);
+        this.shipDebris = new Array(randomDebris)
+            .fill()
+            .map(() => new ShipDebris(this.p5, this));
+    }
+
+    createTraces() {
+        this.traces.push(new ShipTrace(this.p5, this))
+    }
+
     /** CLEANUP */
     filterOldShots() {
         this.shots = this.shots.filter(
@@ -116,6 +125,14 @@ export default class Ship {
                 && 0 < shot.position.y < this.p5.height
                 && shot.hit === false
         );
+    }
+
+    filterOldTraces() {
+        this.traces = this.traces.filter(trace => trace.faded === false);
+    }
+
+    filterOldShipDebris() {
+        this.shipDebris = this.shipDebris.filter(debris => debris.faded === false);
     }
 
     /** LOOP */
@@ -127,7 +144,6 @@ export default class Ship {
         this.accelerate(p5);
         this.brakes(p5)
 
-
         // CALCULATIONS
         this.velocity = this.calcVelocity();
         this.position = this.calcPosition();
@@ -135,14 +151,23 @@ export default class Ship {
 
         // CLEANUP
         this.filterOldShots();
+        this.filterOldTraces();
+        this.filterOldShipDebris();
 
         // RENDERING
         this.shots.forEach(shot => shot.draw());
-        p5.push()
-        p5.translate(this.position.x, this.position.y);
-        p5.rotate(this.angleOfShip);
-        p5.image(this.image, 5, 0, this.shipLength, this.shipWidth)
-        p5.pop();
+        this.traces.forEach(trace => trace.draw());
+
+        if (this.exploded) {
+            this.shipDebris.forEach(debris => debris.draw());
+        } else {
+            // RENDERS THE SHIP ITSELF  
+            p5.push()
+            p5.translate(this.position.x, this.position.y);
+            p5.rotate(this.angleOfShip);
+            p5.image(this.image, 5, 0, this.shipLength, this.shipWidth)
+            p5.pop();
+        }
 
         this.shoot(p5);
     }
