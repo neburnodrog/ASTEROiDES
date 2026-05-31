@@ -1,17 +1,21 @@
-// Generated using webpack-cli http://github.com/webpack-cli
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 
 module.exports = {
-  mode: "development",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
+    clean: true,
   },
   devServer: {
+    static: {
+      directory: path.resolve(__dirname, "dist"),
+    },
     open: true,
     host: "localhost",
+    port: 8080,
+    hot: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -21,14 +25,12 @@ module.exports = {
     new webpack.ProvidePlugin({
       p5: "p5",
     }),
-
-    // Add your plugins here
-    // Learn more obout plugins from https://webpack.js.org/configuration/plugins/
   ],
   module: {
     rules: [
       {
-        test: /\\.(js|jsx)$/,
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
         loader: "babel-loader",
       },
       {
@@ -36,12 +38,9 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(eot|svg|ttf|woff|woff2|png|jpg|jpeg|gif|ico|wav|ogg)$/,
+        test: /\.(eot|svg|ttf|woff|woff2|png|jpg|jpeg|gif|ico|wav|ogg|mp3)$/,
         type: "asset",
       },
-
-      // Add your rules for custom modules here
-      // Learn more about loaders from https://webpack.js.org/loaders/
     ],
   },
 };

@@ -35,10 +35,10 @@ export default class SoundManager {
   }
 
   play(sound) {
-    this.sounds[sound].play();
+    this.sounds[sound]?.play();
   }
 
   stop(sound) {
-    this.sounds[sound].stop();
+    this.sounds[sound]?.stop();
   }
 }
