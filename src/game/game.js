@@ -1,6 +1,7 @@
 /** STATES */
 import GameOverScreen from "./state/gameOverScreen";
 import { StartMenuScreen, LevelUpScreen } from "./state/startMenuScreen";
+import GameState from "./gameState";
 
 /** GAME ELEMENTS */
 import Ship from "./elements/ship";
@@ -13,12 +14,7 @@ export default class Game {
     this.p5 = p5;
     this.soundManager = soundManager;
 
-    // STATES
-    this.started = started;
-    this.paused = false;
-    this.gameOver = false;
-    this.levelCompleted = false;
-    this.restartLevel = false;
+    this.state = new GameState({ started });
     this.level = level;
     this.score;
 
@@ -87,8 +83,9 @@ export default class Game {
   }
 
   checkIfLevelCompleted() {
+    if (!this.state.isPlaying()) return;
     if (this.asteroids.array.length === 0) {
-      this.levelCompleted = true;
+      this.state.levelCleared();
       this.level++;
 
       if (this.soundManager) {
@@ -98,6 +95,8 @@ export default class Game {
   }
 
   checkIfCollisions() {
+    if (!this.state.isPlaying()) return;
+
     this.asteroids.array.forEach((asteroid) => {
       const { x, y } = asteroid.position;
       const distance = this.p5.dist(
@@ -114,17 +113,18 @@ export default class Game {
           this.soundManager.play("shipExplosion");
         }
 
-        if (this.lifes.length === 0) {
-          this.gameOver = true;
+        const wasFinalDeath = this.lifes.length === 0;
+        if (!wasFinalDeath) this.lifes.pop();
 
-          if (this.soundManager) {
-            this.soundManager.play("gameOver");
-          }
-        } else {
-          this.lifes.pop();
-          setTimeout(() => {
-            this.restartLevel = true;
-          }, 3000);
+        this.state.shipDied({
+          wasFinalDeath,
+          level: this.level,
+          score: this.score,
+          lifes: this.lifes,
+        });
+
+        if (wasFinalDeath && this.soundManager) {
+          this.soundManager.play("gameOver");
         }
       }
     });
@@ -150,10 +150,20 @@ export default class Game {
   }
 
   draw() {
-    // GENERAL GAME STATE CHECK
-    if (this.started === false) this.startMenuScreen.draw();
-    else if (this.gameOver) this.gameOverScreen.draw();
-    else if (this.levelCompleted) this.levelUpScreen.draw();
-    else this.playGame();
+    switch (this.state.current) {
+      case "menu":
+        this.startMenuScreen.draw();
+        break;
+      case "playing":
+      case "dying":
+        this.playGame();
+        break;
+      case "levelComplete":
+        this.levelUpScreen.draw();
+        break;
+      case "gameOver":
+        this.gameOverScreen.draw();
+        break;
+    }
   }
 }

@@ -54,16 +54,8 @@ export const Canvas = new p5((p5) => {
     background.draw();
     game.draw();
 
-    if (game.gameOver) {
-      p5.keyPressed = () => {
-        if (p5.keyCode === 32 || p5.keyCode === 13) {
-          resetSketch(false, 1);
-        }
-      };
-    }
-
-    if (game.restartLevel) {
-      resetSketch(true, game.level, game.score, game.lifes);
+    if (game.state.wantsRebuild) {
+      resetSketch(...game.state.rebuildArgs);
     }
 
     let fps = p5.frameRate();
@@ -85,3 +77,7 @@ window.top.document.onkeydown = function (evt) {
     return false;
   }
 };
+
+// p5's preload/setup lifecycle binds to the initial module instance.
+// Opt out of HMR so module edits trigger a full reload (and re-run preload).
+if (module.hot) module.hot.decline();

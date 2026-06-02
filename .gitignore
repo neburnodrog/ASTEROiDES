@@ -2,3 +2,10 @@
 /node_modules
 /dist
 .DS_Store
+
+# Claude Code personal overrides (not shared with team)
+CLAUDE.local.md
+.claude/settings.local.json
+
+.playwright-test
+.playwright-mcp
