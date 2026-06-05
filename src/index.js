@@ -16,6 +16,7 @@ import Game from "./game/game";
 import { findOutHeight, findOutWidth } from "./game/helpers";
 
 import SoundManager from "./game/soundManager.js";
+import Input from "./game/input.js";
 
 // global variables
 let background;
@@ -28,9 +29,10 @@ let spaceQuest;
 // p5 SKETCH
 export const Canvas = new p5((p5) => {
   let soundManager = new SoundManager(p5);
+  let input = new Input(p5);
 
   const resetSketch = (started, level, oldScore, oldLifes) => {
-    game = new Game(p5, soundManager, started, level);
+    game = new Game(p5, soundManager, input, started, level);
     game.setup(ship, heart, oldScore, oldLifes);
   };
 

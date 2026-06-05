@@ -25,10 +25,8 @@ export default class GameOverScreen {
 
         p5.pop();
 
-        p5.keyPressed = () => {
-            if (p5.keyCode === 32 || p5.keyCode === 13) {
-                this.game.state.acknowledgeGameOver();
-            }
-        };
+        if (this.game.input.wasPressed("confirm")) {
+            this.game.state.acknowledgeGameOver();
+        }
     }
 }

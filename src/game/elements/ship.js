@@ -33,9 +33,9 @@ export default class Ship {
 
   /** USER ACTION METHODS */
   rotateShip() {
-    if (this.p5.keyIsDown(68) || this.p5.keyIsDown(39)) {
+    if (this.game.input.isHeld("rotateRight")) {
       this.angleOfShip += PI / 40;
-    } else if (this.p5.keyIsDown(65) || this.p5.keyIsDown(37)) {
+    } else if (this.game.input.isHeld("rotateLeft")) {
       this.angleOfShip -= PI / 40;
     }
 
@@ -44,41 +44,34 @@ export default class Ship {
   }
 
   accelerate() {
-    if (this.p5.keyIsDown(87) || this.p5.keyIsDown(38)) {
+    if (this.game.input.isHeld("thrust")) {
       this.acceleration = 1;
       this.createTraces();
 
-      // Play thrust sound (looping while accelerating)
       if (this.game?.soundManager && !this.thrustSoundPlaying) {
         this.game.soundManager.play("shipThrust");
         this.thrustSoundPlaying = true;
       }
     } else {
       this.acceleration = 0;
-
-      // Stop thrust sound when not accelerating
       this.thrustSoundPlaying = false;
     }
   }
 
   brakes() {
-    if (this.p5.keyIsDown(83) || this.p5.keyIsDown(40)) {
+    if (this.game.input.isHeld("brake")) {
       this.velocity.x -= 0.04 * Math.cos(this.angleOfShip);
       this.velocity.y -= 0.04 * Math.sin(this.angleOfShip);
     }
   }
 
-  shoot() {
-    const { p5 } = this;
-    p5.keyPressed = () => {
-      if (p5.keyCode === 32 || p5.keyCode === 13) {
-        this.shots.push(new Shot(p5, this));
-
-        if (this.game?.soundManager) {
-          this.game.soundManager.play("shoot");
-        }
+  fireIfPressed() {
+    if (this.game.input.wasPressed("shoot")) {
+      this.shots.push(new Shot(this.p5, this));
+      if (this.game?.soundManager) {
+        this.game.soundManager.play("shoot");
       }
-    };
+    }
   }
 
   /** CALCULATIONS */
@@ -186,6 +179,6 @@ export default class Ship {
       p5.pop();
     }
 
-    this.shoot(p5);
+    this.fireIfPressed();
   }
 }

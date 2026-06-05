@@ -10,9 +10,10 @@ import Asteroids from "./elements/asteroids";
 import Life from "./elements/life";
 
 export default class Game {
-  constructor(p5, soundManager, started, level) {
+  constructor(p5, soundManager, input, started, level) {
     this.p5 = p5;
     this.soundManager = soundManager;
+    this.input = input;
 
     this.state = new GameState({ started });
     this.level = level;

@@ -15,7 +15,7 @@ export class StartMenuScreen {
     this.color = "#AFE4FF";
   }
 
-  draw() {
+  _render() {
     const p5 = this.p5;
 
     p5.push();
@@ -43,12 +43,15 @@ export class StartMenuScreen {
     );
 
     p5.pop();
+  }
 
-    p5.keyPressed = () => {
-      if (p5.keyCode === 32 || p5.keyCode === 13) {
-        this.game.state.startPlaying();
-      }
-    };
+  _onConfirm() {
+    this.game.state.startPlaying();
+  }
+
+  draw() {
+    this._render();
+    if (this.game.input.wasPressed("confirm")) this._onConfirm();
   }
 }
 
@@ -58,17 +61,11 @@ export class LevelUpScreen extends StartMenuScreen {
     this.controls = { text: "", position: { x: 0, y: 0 } };
   }
 
-  draw() {
-    super.draw();
-
-    this.p5.keyPressed = () => {
-      if (this.p5.keyCode === 32 || this.p5.keyCode === 13) {
-        this.game.state.acknowledgeLevelUp({
-          level: this.game.level,
-          score: this.game.score,
-          lifes: this.game.lifes,
-        });
-      }
-    };
+  _onConfirm() {
+    this.game.state.acknowledgeLevelUp({
+      level: this.game.level,
+      score: this.game.score,
+      lifes: this.game.lifes,
+    });
   }
 }
