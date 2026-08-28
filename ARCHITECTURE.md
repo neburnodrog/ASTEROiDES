@@ -13,7 +13,7 @@ There are no external services, no persistence layer, and no tests. The only run
 | Module | Path | Purpose | Key Files |
 |---|---|---|---|
 | Bootstrap | `src/index.js` | p5 instance creation, asset preload, top-level state reset wiring | `index.js` |
-| Game Controller | `src/game/` | Per-life Game instance, state-machine dispatch, collision/score logic | `game.js`, `gameState.js`, `input.js`, `soundManager.js`, `helpers.js` |
+| Game Controller | `src/game/` | Per-life Game instance, state-machine dispatch, collision response and score logic | `game.js`, `gameState.js`, `input.js`, `collisions.js`, `soundManager.js`, `helpers.js` |
 | Entities | `src/game/elements/` | Ship, Asteroids, Shot, Debris, Score, Life, Background, Stars — all class-based, all own their own `draw()` | `ship.js`, `asteroids.js`, `shot.js`, `debris.js`, `asteroidDebris.js`, `shipDebris.js`, `shipTrace.js`, `background.js`, `stars.js`, `score.js`, `life.js` |
 | Screens | `src/game/state/` | Non-playing game states rendered as full-canvas overlays | `startMenuScreen.js` (exports `StartMenuScreen` and `LevelUpScreen`), `gameOverScreen.js` |
 | Assets | `src/{font,images,sounds,css}/` | Static assets imported via ES modules and bundled by Webpack's `type: "asset"` rule | `font/SpaceQuest-yOY3.ttf`, `images/ship.png`, `images/heart.png`, `sounds/*.wav` |
@@ -25,6 +25,7 @@ There are no external services, no persistence layer, and no tests. The only run
 - **Game controller**: `src/game/game.js` — dispatches each frame based on `state.current` via `draw()`, runs `playGame()` during `"playing"` and `"dying"`, constructs all entities in `setup()`.
 - **State machine**: `src/game/gameState.js` — owns `state.current`, the legal transitions (`startPlaying`, `shipDied`, `levelCleared`, `acknowledgeLevelUp`, `acknowledgeGameOver`), the 3-second `Dying` timer, and the `wantsRebuild` + `rebuildArgs` signal that `index.js` polls to trigger `resetSketch`.
 - **Input dispatcher**: `src/game/input.js` — single owner of `p5.keyPressed` and the action vocabulary (`thrust`, `brake`, `rotateLeft`, `rotateRight`, `shoot`, `confirm`). Exposes `isHeld(action)` for held inputs and `wasPressed(action)` (consume-on-read) for one-shots. Constructed once in `index.js`; survives `Game` reconstructions.
+- **Collision detection**: `src/game/collisions.js` — two pure functions, `shipVsAsteroids(ship, asteroids)` and `shotsVsAsteroids(shots, asteroids)`. Imports nothing, holds no state, never touches p5. `Game` calls them and owns every consequence.
 - **Player entity**: `src/game/elements/ship.js` — physics integration, shot/trace/debris spawning, screen-wrap. Reads input via `this.game.input.isHeld(...)` / `wasPressed(...)`.
 - **Asteroid system**: `src/game/elements/asteroids.js` — spawns initial wave per `level`, handles splitting (`X` → `M` → `S`) on hit, owns the asteroid array.
 - **Sound dispatch**: `src/game/soundManager.js` — wraps `p5.SoundFile`, applies a shared reverb to explosion/break sounds.
@@ -39,6 +40,8 @@ There are no external services, no persistence layer, and no tests. The only run
 - **Collision detection runs before rendering each frame.** `playGame()` order is: `checkIfCollisions → checkForHits → checkIfExplodedAsteroids → checkIfLevelCompleted → draw entities`. Do not reorder — collision flags drive what the entities render on the same frame.
 - **Asset references must be ES imports.** Webpack's `type: "asset"` rule resolves them at build time. String URLs to `public/` or `dist/` will not work, and adding `require()` calls will conflict with the `.babelrc` `modules: false` setting.
 - **Document-level keydown guard must remain.** The handler at the bottom of `index.js` prevents the browser from scrolling when arrows/space are pressed. Removing it breaks gameplay. (Distinct from the `Input` module — the guard is browser-scroll suppression, not game-action mapping.)
+- **Entity-vs-entity geometry lives only in `src/game/collisions.js`.** No other module measures overlap between two entities. The module is pure: no imports, no state, no p5. It reports hits and never applies them, so scoring, sound, lives, and state transitions stay in `Game`. (The 300px spawn-exclusion check in `asteroids.js` is placement, not collision, and stays where it is.)
+- **`shipVsAsteroids` returns at most one asteroid.** The ship can lose only one life per frame no matter how many asteroids overlap it. This is enforced by the `find` in `collisions.js`, not by a guard in `Game`. Do not reintroduce a loop over all overlapping asteroids in the ship path.
 - **All keyboard input flows through `Input`.** No module outside `src/game/input.js` may read `p5.keyCode`, call `p5.keyIsDown`, or assign `p5.keyPressed` / `p5.keyReleased`. Game-action callers use `this.game.input.isHeld(action)` or `this.game.input.wasPressed(action)`.
 
 ## Cross-Cutting Concerns
@@ -49,6 +52,7 @@ There are no external services, no persistence layer, and no tests. The only run
 | Audio | `p5.sound`-wrapped soundfiles with a shared reverb on explosions | `src/game/soundManager.js` |
 | Input | All keyboard input flows through `src/game/input.js`. Ship and screens query via `input.isHeld(action)` for held inputs and `input.wasPressed(action)` (consume-on-read) for one-shots. `p5.keyPressed` is assigned exactly once, in the `Input` constructor. | `src/game/input.js`, callers in `ship.js`, `state/startMenuScreen.js`, `state/gameOverScreen.js` |
 | Geometry/viewport | Vector helpers and responsive canvas sizing | `src/game/helpers.js` (`findOutWidth`, `findOutHeight`, `calcVectorValue`, `randomInteger`, `drawPolygon`) |
+| Collision geometry | Circle overlap via `Math.hypot`. Detection is pure and separate from response: `collisions.js` reports, `game.js` reacts. | `src/game/collisions.js`, callers in `game.js` |
 | Screen wrap | Each moving entity implements its own `ifOverflowed()` toroidal wrap | `ship.js`, `asteroids.js`, `shot.js` |
 
 ## External Integrations
@@ -61,8 +65,8 @@ None. ASTEROiDES is fully client-side and offline-capable once bundled. The only
 2. `index.js` draws `Background` (parallax stars), then delegates to `game.draw()`.
 3. `Game.draw()` switches on `state.current` to select one of: `startMenuScreen` / `playGame()` (for `playing` and `dying`) / `levelUpScreen` / `gameOverScreen`.
 4. In `playGame()`:
-   a. `checkIfCollisions()` — ship-vs-asteroid distance test; early-returns when `!state.isPlaying()`. On hit, calls `state.shipDied(...)`, which moves state to `dying` (with a 3-second timer) or `gameOver` based on `wasFinalDeath`.
-   b. `checkForHits()` — shot-vs-asteroid distance test; marks asteroids/shots as exploded/hit, awards score, plays break sound. Runs during `dying` too — in-flight shots continue to score.
+   a. `checkIfCollisions()` early-returns when `!state.isPlaying()`, then asks `collisions.shipVsAsteroids` for the single overlapping asteroid (or `null`). On a hit it explodes the ship, plays the sound, pops one life, and calls `state.shipDied(...)`, which moves state to `dying` (with a 3-second timer) or `gameOver` based on `wasFinalDeath`.
+   b. `checkForHits()` asks `collisions.shotsVsAsteroids` for every `{ shot, asteroid }` pair, then marks each asteroid exploded and each shot hit, awards score, and plays the break sound via the `ASTEROID_HITS` table. Runs during `dying` too, so in-flight shots continue to score. Detection completes before any mutation.
    c. `checkIfExplodedAsteroids()` — asks `Asteroids` to split large/medium asteroids into smaller children and remove the exploded ones.
    d. `checkIfLevelCompleted()` — early-returns when `!state.isPlaying()`. Otherwise, if no asteroids remain, increments `level` and calls `state.levelCleared()`.
    e. Each entity's `draw()` runs: physics → cleanup → render.
@@ -82,6 +86,16 @@ Previously, "what state is the game in?" was encoded as four independent boolean
 
 ### Why an `Input` module
 Previously, keyboard handling was scattered: movement and braking polled `p5.keyIsDown(<keyCode>)` from inside `Ship.draw()`; shooting and screen transitions reassigned `p5.keyPressed` from at least four call sites (`Ship.shoot`, `StartMenuScreen.draw`, `LevelUpScreen.draw`, `GameOverScreen.draw`), each rewriting the callback from inside its own per-frame `draw()` loop. The "interface" was *"any module may overwrite p5.keyPressed; whoever wrote last this frame wins"* — barely an interface. The action vocabulary was implicit in 8 scattered magic keycodes (32, 13, 37–40, 65, 68, 83, 87). Consolidating into a single `Input` module gives the engine one deep place that owns the keyboard: it assigns `p5.keyPressed` exactly once, exposes a tiny two-method interface (`isHeld(action)`, `wasPressed(action)`), and makes the key-to-action mapping a single table at the top of `input.js`. The only entry point into game input is now `this.game.input.<query>(action)`. This is also the seam future rebindable controls, gamepad, or touch support would plug into.
+
+### Why a `Collisions` module
+
+Previously `Game` owned the geometry itself. `checkForHits` ran a nested `forEach` over asteroids and shots calling `p5.dist`, and `checkIfCollisions` ran another `forEach` with two unexplained magic numbers (`ship.position.x - 5`, `asteroid.radius + 20`). Together they were about 70 of `game.js`'s 170 lines, and they interleaved four unrelated jobs: measuring distance, flagging entities, awarding score, and playing sound.
+
+Splitting detection from response gives each half one job. `collisions.js` imports nothing, holds no state, and never sees p5, so it can be reasoned about (and later unit-tested) without a canvas. `p5.dist` became `Math.hypot`, which computes the same Euclidean distance and is what removes the p5 dependency. The two magic numbers became named constants with their original values intact. `Game` keeps every consequence, which is deliberate: a "detect and resolve" module would have needed `game`, `score`, `soundManager`, and `state`, moving the coupling instead of removing it. An event-bus variant was rejected too, since it adds indirection for exactly one subscriber.
+
+The split also closed a live bug. The old ship loop never stopped after a hit, and the `isPlaying()` guard sat at the top of the method rather than inside the loop. Two asteroids overlapping the ship on the same frame therefore ran the whole consequence block twice: `GameState.shipDied` guarded the second state transition, but `lifes.pop()` and the explosion sound lived in `Game`, outside that guard, so the player silently lost two lives and heard a doubled explosion. `shipVsAsteroids` uses `find` and returns at most one asteroid, so the fix is structural rather than another guard.
+
+Scoring policy moved to an `ASTEROID_HITS` table at the top of `game.js`, replacing a three-branch if-chain that encoded two lookups (size to points, size to sound) as control flow.
 
 ### Why `module.hot.decline()` in `src/index.js`
 p5's `preload` → `setup` lifecycle binds to the module-scope variables (`spaceQuest`, `ship`, `heart`) at first load. When webpack HMR hot-replaces `index.js`, the new module re-runs and resets those `let` bindings to `undefined`, but p5 does not re-run `preload` — so `setup` can fire (triggered by an async preload-tracker decrement from `p5.sound`) with `spaceQuest` still `undefined`, and `p5.textFont(null)` throws. Declining HMR forces a full page reload on edits, which re-runs the entire lifecycle.
