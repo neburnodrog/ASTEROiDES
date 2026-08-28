@@ -2,12 +2,19 @@
 import GameOverScreen from "./state/gameOverScreen";
 import { StartMenuScreen, LevelUpScreen } from "./state/startMenuScreen";
 import GameState from "./gameState";
+import { shipVsAsteroids, shotsVsAsteroids } from "./collisions";
 
 /** GAME ELEMENTS */
 import Ship from "./elements/ship";
 import Score from "./elements/score";
 import Asteroids from "./elements/asteroids";
 import Life from "./elements/life";
+
+const ASTEROID_HITS = {
+  X: { points: 20, sound: "asteroidBreakL" },
+  M: { points: 50, sound: "asteroidBreakM" },
+  S: { points: 75, sound: "asteroidBreakS" },
+};
 
 export default class Game {
   constructor(p5, soundManager, input, started, level) {
@@ -45,34 +52,18 @@ export default class Game {
   }
 
   checkForHits() {
-    this.asteroids.array.forEach((asteroid) => {
-      this.ship.shots.forEach((shot) => {
-        let distance = this.p5.dist(
-          asteroid.position.x,
-          asteroid.position.y,
-          shot.position.x,
-          shot.position.y
-        );
+    const hits = shotsVsAsteroids(this.ship.shots, this.asteroids.array);
 
-        if (distance < asteroid.radius) {
-          asteroid.exploded = true;
-          shot.hit = true;
+    for (const { shot, asteroid } of hits) {
+      asteroid.exploded = true;
+      shot.hit = true;
 
-          if (asteroid.size === "X") {
-            this.soundManager.play("asteroidBreakL");
-            this.score.value += 20;
-          }
-          if (asteroid.size === "M") {
-            this.soundManager.play("asteroidBreakM");
-            this.score.value += 50;
-          }
-          if (asteroid.size === "S") {
-            this.soundManager.play("asteroidBreakS");
-            this.score.value += 75;
-          }
-        }
-      });
-    });
+      const rule = ASTEROID_HITS[asteroid.size];
+      if (rule) {
+        this.soundManager.play(rule.sound);
+        this.score.value += rule.points;
+      }
+    }
   }
 
   checkIfExplodedAsteroids() {
@@ -98,37 +89,28 @@ export default class Game {
   checkIfCollisions() {
     if (!this.state.isPlaying()) return;
 
-    this.asteroids.array.forEach((asteroid) => {
-      const { x, y } = asteroid.position;
-      const distance = this.p5.dist(
-        x,
-        y,
-        this.ship.position.x - 5,
-        this.ship.position.y
-      );
+    const hit = shipVsAsteroids(this.ship, this.asteroids.array);
+    if (!hit) return;
 
-      if (distance < asteroid.radius + 20) {
-        this.ship.handleExplosion();
+    this.ship.handleExplosion();
 
-        if (this.soundManager) {
-          this.soundManager.play("shipExplosion");
-        }
+    if (this.soundManager) {
+      this.soundManager.play("shipExplosion");
+    }
 
-        const wasFinalDeath = this.lifes.length === 0;
-        if (!wasFinalDeath) this.lifes.pop();
+    const wasFinalDeath = this.lifes.length === 0;
+    if (!wasFinalDeath) this.lifes.pop();
 
-        this.state.shipDied({
-          wasFinalDeath,
-          level: this.level,
-          score: this.score,
-          lifes: this.lifes,
-        });
-
-        if (wasFinalDeath && this.soundManager) {
-          this.soundManager.play("gameOver");
-        }
-      }
+    this.state.shipDied({
+      wasFinalDeath,
+      level: this.level,
+      score: this.score,
+      lifes: this.lifes,
     });
+
+    if (wasFinalDeath && this.soundManager) {
+      this.soundManager.play("gameOver");
+    }
   }
 
   // DRAW

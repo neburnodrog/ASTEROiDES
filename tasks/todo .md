@@ -1,248 +1,251 @@
-# Plan: Deepen Input Dispatch
+# Plan: Extract collision detection into a Collisions module
 
 ## Goal
 
-Build a single `Input` module that owns ALL keyboard polling and event handling for the game. Eliminate the 60Hz `p5.keyPressed` reassignment scattered across `Ship` and three screens. Replace 8 magic-number keycodes with a 6-action vocabulary. Assign `p5.keyPressed` exactly **once**, ever.
+Move the two distance tests out of `Game` into a pure `collisions` module with no dependencies. `Game` keeps every consequence (explode, score, sound, lives, state transition) but stops owning geometry. Fix the double-life bug that the current `forEach` shape allows.
+
+This is the third extraction in the arc after `GameState` (`00fd2d8`) and `Input` (`8fa551d`).
 
 ## Decisions locked
 
-- **Interface**: poll-only, two methods.
-  - `isHeld(action) → bool` — held inputs (thrust, brake, rotate). Delegates to `p5.keyIsDown`.
-  - `wasPressed(action) → bool` — one-shot inputs (shoot, confirm). Consume-on-read per-action.
-- **Action vocabulary** (6 actions): `thrust`, `brake`, `rotateLeft`, `rotateRight`, `shoot`, `confirm`.
-- **Key mapping** — preserves current behavior:
-  - `thrust`: 87 (W), 38 (Up)
-  - `brake`: 83 (S), 40 (Down)
-  - `rotateLeft`: 65 (A), 37 (Left)
-  - `rotateRight`: 68 (D), 39 (Right)
-  - `shoot`: 32 (Space), 13 (Enter)
-  - `confirm`: 32 (Space), 13 (Enter)
-- **Module location**: constructed once in `src/index.js` (same scope as `soundManager`), passed into `Game` constructor. Survives `Game` reconstructions on level-up/respawn/restart.
-- **Document-level keydown blocker** at `index.js:73-79`: **stays put**. Browser-scroll suppression is a distinct concern from game-action mapping.
-- **`wasPressed` semantics**: per-action `Set` of pending presses. A single physical key-press of Space populates BOTH `shoot` and `confirm` pending — reading one doesn't clear the other. Only the active consumer (Ship during `playing`, screen during `menu`/`levelComplete`/`gameOver`) reads each frame, so they never compete.
-- **`isHeld` mechanism**: query `p5.keyIsDown(keyCode)` per call. No internal `held` state needed. Smaller module.
+- **Boundary: detect only.** The module owns geometry and nothing else. It imports nothing, holds no state, and never sees `p5`, `game`, `score`, `soundManager`, or `GameState`.
+- **Shape: two exported functions**, not a class. There is no state to hold.
+  - `shipVsAsteroids(ship, asteroids)` returns the first overlapping asteroid, or `null`.
+  - `shotsVsAsteroids(shots, asteroids)` returns an array of `{ shot, asteroid }` pairs.
+- **`p5.dist` becomes `Math.hypot`.** Both compute Euclidean distance, so results are identical. This is what keeps the module free of p5 and unit-testable without a canvas.
+- **Hitbox constants keep their exact values.** The `- 5` at `game.js:106` and the `+ 20` at `game.js:110` become `SHIP_HITBOX_OFFSET_X` and `SHIP_HITBOX_PADDING`. The hitbox does not change size or position.
+- **The size lookup folds in.** The three-branch if-chain in `checkForHits` becomes an `ASTEROID_HITS` table at the top of `game.js`. It sits inside a method this refactor already rewrites.
+- **Consequences stay in `Game`.** Rejected the "detect and resolve" boundary: a `Collisions` class would need `game`, `score`, `soundManager`, and `state`, which moves the coupling rather than removing it.
+- **No event bus.** Rejected "detect plus emit events": indirection with exactly one subscriber in a 1200-line codebase.
 
 ## Vocabulary
 
-- **Input** — module that owns the keyboard interface. One per p5 instance, constructed in `index.js`, lives for the lifetime of the page.
-- **Action** — a named game intent (`thrust`, `confirm`, etc.) decoupled from physical keys.
-- **Key map** — the action → [keyCode] table, currently hardcoded in `input.js`.
+- **Hit pair**: a `{ shot, asteroid }` object. `shotsVsAsteroids` returns zero or more per frame.
+- **Hitbox padding**: the 20px added to an asteroid's radius when testing against the ship, making the ship collide slightly before its sprite visually touches. Hand-tuned; preserved verbatim.
 
-## Files Touched
+## The bug this fixes
+
+`checkIfCollisions` iterates every asteroid with `forEach` and never stops after a hit. The `isPlaying()` guard sits at the top of the method, not inside the loop. When two asteroids overlap the ship on the same frame:
+
+```
+asteroid 1 -> handleExplosion, play shipExplosion, lifes.pop() 3->2, state.shipDied() -> "dying"
+asteroid 2 -> handleExplosion, play shipExplosion, lifes.pop() 2->1, state.shipDied() -> early return
+```
+
+`GameState.shipDied` guards the state transition, but `lifes.pop()` and the sound live in `Game`, outside that guard. The player silently loses two lives and hears a doubled explosion.
+
+`shipVsAsteroids` uses `find`, so it returns at most one asteroid and the consequence block runs at most once per frame. The fix is structural, not another guard.
+
+## Behavior preserved deliberately
+
+`checkForHits` currently loops asteroids-outer and shots-inner, and never filters out an already-hit shot. One shot sitting inside two overlapping asteroids therefore destroys and scores both. `shotsVsAsteroids` returns every matching pair in that same iteration order, so this is unchanged.
+
+Detection now runs fully before any mutation, where the old code interleaved them. This is equivalent because the old loop never read `asteroid.exploded` or `shot.hit` as a filter condition.
+
+## Files touched
 
 | File | Change |
 |---|---|
-| `src/game/input.js` | **NEW** — `Input` class, ~30 LOC. |
-| `src/index.js` | Construct `input = new Input(p5)`; pass into `new Game(...)`. Document-level keydown blocker untouched. |
-| `src/game/game.js` | Accept `input` in constructor; store on `this.input`. Pass into `Ship`. Screens reach it via `game.input`. |
-| `src/game/elements/ship.js` | `rotateShip`, `accelerate`, `brakes` use `input.isHeld`. Delete `shoot()`'s `p5.keyPressed` reassignment; inline a `wasPressed("shoot")` check at the end of `draw()`. |
-| `src/game/state/startMenuScreen.js` | Extract `_render()` template method; `draw()` calls `_render()` then `wasPressed("confirm")`. `LevelUpScreen` overrides `_onConfirm()` only (not `draw()`). |
-| `src/game/state/gameOverScreen.js` | Delete `p5.keyPressed` reassignment; add `wasPressed("confirm")` check. |
-| `ARCHITECTURE.md` | Add `Input` to Module Map, update Cross-Cutting Concerns "Input" row, add a "Why an Input module" Key Decision. |
+| `src/game/collisions.js` | NEW. Two exported functions plus two constants and one private helper. About 30 LOC. |
+| `src/game/game.js` | Import the two functions. Add `ASTEROID_HITS`. Rewrite `checkForHits` and `checkIfCollisions`. Roughly 70 lines become 25. |
+| `ARCHITECTURE.md` | Module Map, one new invariant, Data Flow 4a and 4b, a "Why a Collisions module" decision. |
 
-## Implementation Steps
+Nothing else changes. No entity class, no screen, no build config. `index.js` gets a temporary `window.__VERIFY` hook during step 3 that is removed before step 5, so it ends the refactor byte-identical to `main`.
 
-### 1. Create `src/game/input.js`
+## Implementation steps
+
+### 1. Create `src/game/collisions.js`
 
 ```js
-const KEY_MAP = {
-  thrust: [87, 38],
-  brake: [83, 40],
-  rotateLeft: [65, 37],
-  rotateRight: [68, 39],
-  shoot: [32, 13],
-  confirm: [32, 13],
+// Hand-tuned so the ship collides just before its sprite visually touches.
+// Values carried over verbatim from the original test in Game.checkIfCollisions.
+const SHIP_HITBOX_OFFSET_X = -5;
+const SHIP_HITBOX_PADDING = 20;
+
+const overlaps = (ax, ay, bx, by, radius) =>
+  Math.hypot(ax - bx, ay - by) < radius;
+
+export function shipVsAsteroids(ship, asteroids) {
+  const x = ship.position.x + SHIP_HITBOX_OFFSET_X;
+  const y = ship.position.y;
+
+  return (
+    asteroids.find((asteroid) =>
+      overlaps(
+        x,
+        y,
+        asteroid.position.x,
+        asteroid.position.y,
+        asteroid.radius + SHIP_HITBOX_PADDING
+      )
+    ) ?? null
+  );
+}
+
+export function shotsVsAsteroids(shots, asteroids) {
+  const hits = [];
+
+  for (const asteroid of asteroids) {
+    for (const shot of shots) {
+      if (
+        overlaps(
+          shot.position.x,
+          shot.position.y,
+          asteroid.position.x,
+          asteroid.position.y,
+          asteroid.radius
+        )
+      ) {
+        hits.push({ shot, asteroid });
+      }
+    }
+  }
+
+  return hits;
+}
+```
+
+### 2. Rewrite the two methods in `src/game/game.js`
+
+Add the import and the lookup table:
+
+```js
+import { shipVsAsteroids, shotsVsAsteroids } from "./collisions";
+
+const ASTEROID_HITS = {
+  X: { points: 20, sound: "asteroidBreakL" },
+  M: { points: 50, sound: "asteroidBreakM" },
+  S: { points: 75, sound: "asteroidBreakS" },
 };
-
-const ACTIONS_BY_KEY = {};
-for (const [action, codes] of Object.entries(KEY_MAP)) {
-  for (const code of codes) {
-    (ACTIONS_BY_KEY[code] ??= []).push(action);
-  }
-}
-
-export default class Input {
-  constructor(p5) {
-    this.p5 = p5;
-    this._pending = new Set();
-    p5.keyPressed = () => {
-      const actions = ACTIONS_BY_KEY[p5.keyCode];
-      if (actions) for (const a of actions) this._pending.add(a);
-    };
-  }
-
-  isHeld(action) {
-    const codes = KEY_MAP[action];
-    return codes ? codes.some((c) => this.p5.keyIsDown(c)) : false;
-  }
-
-  wasPressed(action) {
-    if (!this._pending.has(action)) return false;
-    this._pending.delete(action);
-    return true;
-  }
-}
 ```
 
-### 2. Wire `Input` into `src/index.js`
-
-- Import `Input` from `./game/input`.
-- Construct `const input = new Input(p5);` alongside `soundManager`.
-- Pass into `new Game(p5, soundManager, input, started, level)`.
-- Keep `module.hot.decline()` (full reload re-runs Input construction).
-- Document-level keydown blocker untouched.
-
-### 3. Update `src/game/game.js`
-
-- Constructor signature: `(p5, soundManager, input, started, level)`. Store `this.input = input`.
-- Ship reaches Input via `this.game.input` from inside Ship — no Ship constructor change needed.
-
-### 4. Update `src/game/elements/ship.js`
-
-- Replace `rotateShip()`:
-  ```js
-  rotateShip() {
-    if (this.game.input.isHeld("rotateRight")) this.angleOfShip += PI / 40;
-    else if (this.game.input.isHeld("rotateLeft")) this.angleOfShip -= PI / 40;
-    // angle normalization untouched
-  }
-  ```
-- Replace `accelerate()`: `if (this.game.input.isHeld("thrust")) { ... }` — preserve thrust sound logic.
-- Replace `brakes()`: `if (this.game.input.isHeld("brake")) { ... }`.
-- Delete the entire `shoot()` method.
-- In `draw()`, replace the trailing `this.shoot(p5)` call with:
-  ```js
-  if (this.game.input.wasPressed("shoot")) {
-    this.shots.push(new Shot(this.p5, this));
-    if (this.game?.soundManager) this.game.soundManager.play("shoot");
-  }
-  ```
-
-### 5. Restructure `src/game/state/startMenuScreen.js`
-
-The current `LevelUpScreen.draw() → super.draw()` chain breaks under consume-on-read `wasPressed`: super would read and consume `confirm` first, leaving LevelUp's read returning `false`. Fix via template method.
+Then:
 
 ```js
-class StartMenuScreen {
-  // ... constructor unchanged
+checkForHits() {
+  const hits = shotsVsAsteroids(this.ship.shots, this.asteroids.array);
 
-  _render() {
-    // all the existing p5.push/translate/text/pop block, sans p5.keyPressed
-  }
+  for (const { shot, asteroid } of hits) {
+    asteroid.exploded = true;
+    shot.hit = true;
 
-  _onConfirm() {
-    this.game.state.startPlaying();
-  }
-
-  draw() {
-    this._render();
-    if (this.game.input.wasPressed("confirm")) this._onConfirm();
+    const rule = ASTEROID_HITS[asteroid.size];
+    if (rule) {
+      this.soundManager.play(rule.sound);
+      this.score.value += rule.points;
+    }
   }
 }
 
-class LevelUpScreen extends StartMenuScreen {
-  // constructor unchanged (still overrides this.controls = ...)
+checkIfCollisions() {
+  if (!this.state.isPlaying()) return;
 
-  _onConfirm() {
-    this.game.state.acknowledgeLevelUp({
-      level: this.game.level,
-      score: this.game.score,
-      lifes: this.game.lifes,
-    });
-  }
-  // no draw() override needed
+  const hit = shipVsAsteroids(this.ship, this.asteroids.array);
+  if (!hit) return;
+
+  this.ship.handleExplosion();
+  if (this.soundManager) this.soundManager.play("shipExplosion");
+
+  const wasFinalDeath = this.lifes.length === 0;
+  if (!wasFinalDeath) this.lifes.pop();
+
+  this.state.shipDied({
+    wasFinalDeath,
+    level: this.level,
+    score: this.score,
+    lifes: this.lifes,
+  });
+
+  if (wasFinalDeath && this.soundManager) this.soundManager.play("gameOver");
 }
 ```
 
-### 6. Update `src/game/state/gameOverScreen.js`
+The original guarded `soundManager` with `if (this.soundManager)` in `checkIfCollisions` but not in `checkForHits`. Keep both as they are; do not add or remove a guard in this refactor.
 
-Replace the `p5.keyPressed` reassignment with:
-```js
-if (this.game.input.wasPressed("confirm")) this.game.state.acknowledgeGameOver();
-```
-Place it at the end of `draw()`, after the rendering block.
+### 3. Verify
 
-### 7. Update `ARCHITECTURE.md`
+No test runner exists and this plan does not add one. Verification runs headless playwright against `npm start`, using a temporary `window.__VERIFY` hook in `index.js` that is removed before committing. This matches the Input refactor.
 
-- **Module Map**: add `Input` row under "Game Controller" (`src/game/input.js`).
-- **Cross-Cutting Concerns** → "Input" row: replace with "All keyboard input flows through `src/game/input.js`. Ship and screens query via `input.isHeld(action)` / `input.wasPressed(action)`. `p5.keyPressed` is assigned exactly once, in the Input constructor."
-- **Invariants**: add "**Input flows through `Input`.** No module outside `input.js` may read `p5.keyCode`, `p5.keyIsDown`, or assign `p5.keyPressed` / `p5.keyReleased`."
-- **Key Decisions**: add "### Why an Input module" — short rationale.
+### 4. Update `ARCHITECTURE.md`
 
-### 8. Manual verification
+- Module Map: add `collisions.js` to the Game Controller row.
+- New invariant: collision geometry lives only in `src/game/collisions.js`; no other module measures distance between entities.
+- Data Flow 4a and 4b: describe the detect-then-apply split.
+- Key Decisions: add "Why a Collisions module", covering the detect-only boundary, the rejected alternatives, and the double-life bug.
 
-(No test runner — verification is manual via browser.)
+### 5. Commit
 
-- Start dev server: `npm start`.
-- Walk via headless browser (playwright):
-  - Menu → Space → playing.
-  - Hold W/Up: ship accelerates. Release: decelerates.
-  - Hold S/Down: ship brakes.
-  - Hold A/Left, D/Right: ship rotates each direction.
-  - Tap Space/Enter: one shot fires per press (not auto-fire on hold).
-  - Collide with asteroid → dying → respawn cycle: thrust still works after respawn (Input survived Game reconstruction).
-  - Clear a level → LevelUp screen → Space → next level (acknowledgeLevelUp, not startPlaying).
-  - Die all lives → GameOver → Space → back to menu.
-- Grep verification: `grep -rn "keyPressed *=\|keyIsDown\|keyCode" src/` should return ZERO hits outside `src/game/input.js` (the document-level blocker at `src/index.js:73-79` uses `evt.keyCode` from the browser's `onkeydown` event, not `p5.keyCode` — distinct concern, preserved).
+Two commits, matching the arc:
 
-## Risks / Watchlist
+1. `extract collision detection into Collisions module`
+2. `update ARCHITECTURE.md for Collisions refactor`
 
-- **`LevelUpScreen extends StartMenuScreen` inheritance chain.** Step 5 restructures via template method. Verify LevelUp's `controls.text = ""` override still suppresses the controls line (the constructor override should remain untouched).
-- **`p5.keyPressed` being called by p5 only when canvas has focus.** Today's behavior; preserved.
-- **`framerate` shifts between screens.** `StartMenuScreen.draw()` calls `p5.frameRate(10)`, `gameOverScreen` calls `p5.frameRate(20)`. `wasPressed` doesn't care about frame rate (event-driven). `isHeld` is per-frame but only used during gameplay (60fps). No interaction.
-- **No tests.** Verification is manual via headless browser; playwright screenshot tool times out on the live canvas — workaround from prior session: use `canvas.toDataURL('image/png')` via `browser_evaluate`.
+## Verification checklist
 
-## Out of Scope
+| Check | How |
+|---|---|
+| Build clean | `npm start`, 0 errors, no new warnings |
+| Page loads | 0 console errors |
+| No stray geometry | `grep -rn "Math.hypot" src/` returns only `collisions.js`; the one surviving `p5.dist` in `asteroids.js` is spawn placement, not collision |
+| Shot destroys asteroid | shoot an X, asteroid splits into 2 M |
+| Score per size | X awards 20, M awards 50, S awards 75 |
+| Ship collision costs one life | force one asteroid onto the ship, `lifes.length` drops by exactly 1 |
+| **Double overlap costs one life** | force two asteroids onto the ship in the same frame, `lifes.length` drops by exactly 1 (this fails on `main`, dropping 2) |
+| Collisions suppressed while dying | asteroid parked on ship during the 3s window does not decrement again |
+| Level clear | empty the asteroid array, state goes to `levelComplete`, level increments |
+| Respawn rebuild | confirm from `levelComplete`, new Game at next level, same `Input` instance |
+| Game over | exhaust lives, state goes to `gameOver`, restart returns to `menu` |
 
-- Gamepad / touch input.
-- Rebindable controls (key remapping UI). The `KEY_MAP` constant is the seam where that would land later.
-- Fixing the stale `CLAUDE.md` "Controls" section (claims `.`/`G` for shoot; code and in-game text say Space/Enter). Separate trivial doc fix.
+## Out of scope
+
+- Spatial partitioning or any broad-phase optimization. Asteroid counts stay under ~20, so the O(n*m) loop is fine.
+- Per-polygon collision. The circle test is what the game has always used.
+- Extracting lives, level progression, or entity construction from `Game`. Those are the next candidates, not this one.
+- The starting-lives question below.
+
+## Followups noted, not addressed
+
+- `wasFinalDeath` is computed as `this.lifes.length === 0`, and `lifes` starts at 3. The player therefore gets 4 deaths while 3 hearts render. This may be intended (3 spares plus the ship in play) or off by one. It is a gameplay decision, not a refactor, so this plan leaves it exactly as is.
+- After this lands, `Game` still owns entity construction, lives, level progression, and frame orchestration. Lives and level are the obvious next extractions.
 
 ## Review
 
-### Status: implemented + verified, NOT committed (awaiting OK)
+### Status: implemented and verified, committed
 
 ### What landed
 
-- **`src/game/input.js` (new, 38 LOC)**: `Input` class. Constructor assigns `p5.keyPressed` exactly once. Public surface is `isHeld(action)` and `wasPressed(action)`. Internal `_pending` is `Map<keyCode, Set<action>>` (not a plain `Set<action>` as originally planned — see "Surprise during verification" below).
-- **`src/index.js`**: imports `Input`, constructs `input = new Input(p5)` once alongside `soundManager`, passes both into every `new Game(...)`. Document-level keydown blocker untouched. `module.hot.decline()` untouched.
-- **`src/game/game.js`**: constructor signature now `(p5, soundManager, input, started, level)`. Stores `this.input`.
-- **`src/game/elements/ship.js`**: `rotateShip`, `accelerate`, `brakes` use `this.game.input.isHeld(...)`. `shoot()` method deleted; replaced with `fireIfPressed()` called at the bottom of `draw()`, using `wasPressed("shoot")`.
-- **`src/game/state/startMenuScreen.js`**: restructured via template method — `_render()` for the text rendering, `_onConfirm()` for the action. `LevelUpScreen` overrides `_onConfirm()` only. No more `super.draw()` chain.
-- **`src/game/state/gameOverScreen.js`**: replaced `p5.keyPressed` reassignment with `if (this.game.input.wasPressed("confirm")) ...`.
-- **`ARCHITECTURE.md`**: added `Input` to Module Map and Entry Points; added "All keyboard input flows through `Input`" invariant; replaced the Cross-Cutting Concerns "Input" row; added a "Why an `Input` module" Key Decision.
+- **`src/game/collisions.js` (new, 46 LOC)**: `shipVsAsteroids` and `shotsVsAsteroids`, plus the private `overlaps` helper and the two hitbox constants. Zero imports. Built exactly as planned, no deviations.
+- **`src/game/game.js`**: 40 insertions, 58 deletions. `checkForHits` went from 30 lines to 14, `checkIfCollisions` from 35 to 26. Added the `ASTEROID_HITS` table and the one import.
+- **`ARCHITECTURE.md`**: Module Map, a new Entry Point, two new invariants, the Data Flow 4a/4b rewrite, a new Cross-Cutting row, and the "Why a Collisions module" decision.
+- **`src/index.js`**: ends byte-identical to `main`. The temporary `window.__VERIFY` hook was added for verification and removed before committing.
 
-### Surprise during verification
+### Correction to this plan
 
-The originally-planned `_pending: Set<action>` had a bug: pressing Space on the menu queued BOTH `confirm` and `shoot` into `_pending`. The menu consumed `confirm` and transitioned to `playing`; on the next frame, Ship read `_pending` and fired a stray shot from the same physical key press. This was a behavioral regression — the old code's `p5.keyPressed = ...` reassignment couldn't queue across reassignments, so a single Space press meant exactly one action.
+The checklist originally asserted `grep -rn "\.dist("` would return zero hits. That was wrong. `asteroids.js:24` uses `p5.dist` to reject spawn points within 300px of the canvas center so asteroids do not appear on top of the ship. That is placement, not an entity-vs-entity overlap test, so it correctly stays put. The invariant written into `ARCHITECTURE.md` says "entity-vs-entity geometry" and calls out this exception explicitly.
 
-**Fix**: `_pending` became `Map<keyCode, Set<action>>`. A single physical key press now occupies one entry, and `wasPressed(action)` deletes the entire entry when it consumes a match. Reading `confirm` on Space clears the queued `shoot` from the same press. Verified via playwright: one Space tap on the menu yields `state="playing"` AND `shots=0` (was `shots=1` before the fix).
-
-### Verification (no test runner exists — performed via headless playwright)
-
-A temporary `window.__VERIFY = { get game() { ... }, input }` hook was added to `index.js` for in-page state introspection, then **removed** before this commit-ready state. The hook is no longer in `src/index.js`.
+### Verification (headless playwright, no test runner exists)
 
 | Check | Result |
 |---|---|
-| `npm start` build | clean, 0 errors, 1 (pre-existing) warning |
-| Page load | 0 console errors |
-| `grep -rn "keyPressed\|keyIsDown\|keyCode\|keyReleased" src/` | only `src/game/input.js` (5 hits, all owned) and `src/index.js:77-78` (preserved browser blocker using `evt.keyCode` from `onkeydown`, distinct from p5) |
-| **isHeld responds to keydown/keyup** | `isHeld("thrust")`: false → keydown(87) → true → keyup(87) → false |
-| **Thrust (W)** | ship.position.x: 594 → 694 (moved 100px in facing direction) |
-| **rotateLeft (A)** | angleOfShip: 0.000 → -1.492 |
-| **rotateRight (D)** | angleOfShip: -1.492 → -0.079 |
-| **Shoot (Space tap during playing)** | shots: 0 → 1 |
-| **Brake (S)** | speed: 5.265 → 3.491 |
-| **menu → confirm → playing** | state transitions cleanly, **shots=0** (no stray shot from confirm's Space) |
-| **playing → empty asteroids → levelComplete** | state="levelComplete", level incremented to 2 |
-| **levelComplete → confirm → playing (rebuild)** | new Game with 4 asteroids at level 2, **`game.input === input`** (same instance survived rebuild) |
-| **shoot after rebuild** | new Ship's shots: 0 → 1 (Input survived; new Ship wired correctly) |
-| **playing → forced wasFinalDeath → gameOver** | state="gameOver" |
-| **gameOver → confirm → menu (rebuild)** | state="menu", level reset to 1, same Input instance |
-| **menu → confirm → playing (after gameOver cycle)** | state="playing", shots=0 |
+| `npm start` build | clean, 0 errors |
+| Console across the whole session | 0 errors; 1 warning, the pre-existing p5.sound AudioContext autoplay notice |
+| Score for X | +20 exactly, asteroid flagged exploded, shot flagged hit |
+| Score for M | +50 exactly |
+| Score for S | +75 exactly |
+| Shot just outside the radius | no score, no explosion (boundary holds) |
+| **Two asteroids overlapping the ship in one frame** | **lost exactly 1 life; a replica of main's loop over the same setup ran the consequence block 2 times** |
+| Collisions suppressed while `dying` | second `checkIfCollisions` in the same synchronous block lost 0 lives, state stayed `dying` |
+| Space on menu | state to `playing` with `shots: 0`, so the Input consume-on-read fix still holds |
+| Real keypress shot through the frame loop | X destroyed, split into 2 M, score +20 |
+| Level clear | asteroids emptied, state to `levelComplete`, level 1 to 2, score preserved |
+| Level-up rebuild | new Game at level 2 with 4 asteroids, score preserved, same `Input` instance |
+| Final death | lives at 0 plus a collision moves state to `gameOver` |
+| Game-over restart | back to `menu`, level 1, 3 lives, score 0 |
 
-### Followups (not in scope)
+One earlier run of the dying-suppression check reported a false failure. The test read `state.current` after calling the method, and the 3-second respawn timer had rebuilt `Game` between the two evaluates, so it was reading a fresh `playing` game. Rerunning it as a single synchronous block gave the correct result above. The bug was in the test, not the code.
 
-- The stale `CLAUDE.md` "Controls" section still claims `.`/`G` for shoot; code uses Space/Enter (and so does the in-game text in `startMenuScreen.js:12`). Trivial doc fix — separate from this refactor.
-- The `Input` module is now the seam for future rebindable controls, gamepad, or touch — `KEY_MAP` is the table to extend.
+### Followups
 
+- `wasFinalDeath` is still `lifes.length === 0` with `lifes` starting at 3, so the player gets 4 deaths while 3 hearts render. Untouched on purpose, as noted above.
+- `Game` is now 152 lines and still owns entity construction, lives, level progression, and frame orchestration. Lives and level are the next candidates.
+- `collisions.js` is pure and has no p5 dependency, so it is the first module in this repo that could be unit-tested without a canvas if a test runner is ever added.
