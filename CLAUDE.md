@@ -58,6 +58,11 @@ See **ARCHITECTURE.md** for the module map and game-loop invariants.
 
 ## Controls (for testing)
 
-- Movement: arrow keys OR `AWDS`
-- Shoot: `.` OR `G`
-- Game-over restart: space or enter
+Defined by `KEY_MAP` in `src/game/input.js`. Change them there, not here.
+
+- Thrust: `W` or up arrow
+- Brake: `S` or down arrow
+- Rotate left: `A` or left arrow
+- Rotate right: `D` or right arrow
+- Shoot: space or enter
+- Confirm (start menu, level-up, game-over restart): space or enter
